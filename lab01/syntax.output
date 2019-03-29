@@ -954,7 +954,8 @@ State 72
    56    | Exp . DOT ID
    61    | Exp . LB error RB
 
-    ASSIGNOP  shift, and go to state 79
+    DOT  shift, and go to state 86
+    LB   shift, and go to state 87
 
     $default  reduce using rule 51 (Exp)
 
@@ -974,14 +975,8 @@ State 73
    56    | Exp . DOT ID
    61    | Exp . LB error RB
 
-    ASSIGNOP  shift, and go to state 79
-    RELOP     shift, and go to state 80
-    PLUS      shift, and go to state 81
-    MINUS     shift, and go to state 82
-    STAR      shift, and go to state 83
-    AND       shift, and go to state 84
-    OR        shift, and go to state 85
-    DIV       shift, and go to state 88
+    DOT  shift, and go to state 86
+    LB   shift, and go to state 87
 
     $default  reduce using rule 52 (Exp)
 
@@ -1374,6 +1369,15 @@ State 99
    61    | Exp . LB error RB
 
     ASSIGNOP  shift, and go to state 79
+    RELOP     shift, and go to state 80
+    PLUS      shift, and go to state 81
+    MINUS     shift, and go to state 82
+    STAR      shift, and go to state 83
+    AND       shift, and go to state 84
+    OR        shift, and go to state 85
+    DOT       shift, and go to state 86
+    LB        shift, and go to state 87
+    DIV       shift, and go to state 88
 
     $default  reduce using rule 42 (Exp)
 
@@ -1393,7 +1397,8 @@ State 100
    56    | Exp . DOT ID
    61    | Exp . LB error RB
 
-    ASSIGNOP  shift, and go to state 79
+    DOT  shift, and go to state 86
+    LB   shift, and go to state 87
 
     $default  reduce using rule 45 (Exp)
 
@@ -1413,7 +1418,8 @@ State 101
    56    | Exp . DOT ID
    61    | Exp . LB error RB
 
-    ASSIGNOP  shift, and go to state 79
+    DOT  shift, and go to state 86
+    LB   shift, and go to state 87
 
     $default  reduce using rule 46 (Exp)
 
@@ -1433,7 +1439,8 @@ State 102
    56    | Exp . DOT ID
    61    | Exp . LB error RB
 
-    ASSIGNOP  shift, and go to state 79
+    DOT  shift, and go to state 86
+    LB   shift, and go to state 87
 
     $default  reduce using rule 47 (Exp)
 
@@ -1453,7 +1460,8 @@ State 103
    56    | Exp . DOT ID
    61    | Exp . LB error RB
 
-    ASSIGNOP  shift, and go to state 79
+    DOT  shift, and go to state 86
+    LB   shift, and go to state 87
 
     $default  reduce using rule 48 (Exp)
 
@@ -1473,7 +1481,8 @@ State 104
    56    | Exp . DOT ID
    61    | Exp . LB error RB
 
-    ASSIGNOP  shift, and go to state 79
+    DOT  shift, and go to state 86
+    LB   shift, and go to state 87
 
     $default  reduce using rule 43 (Exp)
 
@@ -1493,7 +1502,8 @@ State 105
    56    | Exp . DOT ID
    61    | Exp . LB error RB
 
-    ASSIGNOP  shift, and go to state 79
+    DOT  shift, and go to state 86
+    LB   shift, and go to state 87
 
     $default  reduce using rule 44 (Exp)
 
@@ -1557,7 +1567,8 @@ State 109
    56    | Exp . DOT ID
    61    | Exp . LB error RB
 
-    ASSIGNOP  shift, and go to state 79
+    DOT  shift, and go to state 86
+    LB   shift, and go to state 87
 
     $default  reduce using rule 49 (Exp)
 

@@ -3,7 +3,7 @@
 	#include <stdio.h>
 	struct TreeNode{
 		int lineno;
-		int type; // 0 for reserved, 1 for id, 2 for int, 3 for float, 4 for Specifiers, 5 for type
+		int type; // 0 for reserved, 1 for id, 2 for decint, 3 for float, 4 for Specifiers, 5 for type
 		char * name;
 		int type_int;
 		float type_float;
@@ -39,8 +39,9 @@
 		a->sibling = b;
 		return ;
 	}	
+	extern int lexical_flag;
 	void printTree(struct TreeNode *root, int layer) {
-		if (flag == 1) return ;
+		if ((flag == 1)|| (lexical_flag == 1)) return ;
 		if (root) {
 			if (strcmp(root->name, "empty") != 0) {
 				for (int i = 0; i < layer; i++) 
@@ -56,10 +57,10 @@
 						printf("%s\n", root->name);
 						break;
 					case 2:
-						printf("%s: %d (%d)\n",root->name, root->type_int, root->lineno);
+						printf("INT: %d\n", root->type_int);
 						break;
 					case 3:
-						printf("%s: %f (%d)\n",root->name, root->type_float, root->lineno);
+						printf("%s: %f\n",root->name, root->type_float);
 						break;
 					case 5:
 						printf("TYPE: %s\n", root->name);
@@ -92,10 +93,11 @@
 
 %nonassoc LOWER_THAN_ELSE
 %nonassoc ELSE
-%left LP RP LB RB DOT  
-%right NOT 
-%left STAR DIV PLUS MINUS RELOP AND OR
+
 %right ASSIGNOP
+%left STAR DIV PLUS MINUS RELOP AND OR
+%right NOT 
+%left LP RP LB RB DOT  
 
 %%
 /* rules */
@@ -104,7 +106,7 @@
 Program : ExtDefList { $$ = create_node("Program", @$.first_line, ""); add_child($$,$1); printTree($$, 0);}
 	;
 
-ExtDefList : ExtDef ExtDefList {$$ = create_node("ExtDecList", @$.first_line, ""); add_child($$,$1); add_sibling($1,$2);}
+ExtDefList : ExtDef ExtDefList {$$ = create_node("ExtDefList", @$.first_line, ""); add_child($$,$1); add_sibling($1,$2);}
 	| /* empty */ {$$ = create_node("empty", @$.first_line, "");}
 	;
 

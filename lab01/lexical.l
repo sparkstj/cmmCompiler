@@ -1,12 +1,14 @@
 %option yylineno
 %{
 	#include "syntax.tab.h"
+	//#define debug
 	int yycolumn = 1;
   	#define YY_USER_ACTION \
    	yylloc.first_line = yylloc.last_line = yylineno; \
   	yylloc.first_column = yycolumn; \
    	yylloc.last_column = yycolumn + yyleng - 1; \
    	yycolumn += yyleng;
+	int lexical_flag = 0;
 %}
 %option
 digit [0-9]
@@ -32,60 +34,84 @@ WHILE "while"
 Blankspace [\t\f\v\r" "]
 nestedcomments "/*"[^"*/"]*"/*"(.|\n)*"*/"
 %%
-{nestedcomments} {printf("Error type A at line %d: illegal nested comments \'%s\'\n", yylineno, yytext);}
-"//"[^\n]* {}
-"/*"[^"/*""*/"]*"*/" {}
-{STRUCT} {printf("STRUCT\n");
+"//" {char c = input();  while (c != '\n') c = input();}
+"/*" {
+	char now = input(); 
+	char last = now; 
+	while ((now != '/')||(last !='*')) {
+		last = now;
+		now = input();
+		}
+}
+{STRUCT} { 	
+			#ifdef debug 
+			printf("STRUCT\n"); 
+			#endif
 				yylval.node = (struct TreeNode *)malloc(sizeof(TreeNode));
 				yylval.node->lineno = yylineno;
 				yylval.node->type = 4;
-				yylval.node->name = malloc(strlen(yytext)+1);
-				strcpy(yylval.node->name, yytext);
+				yylval.node->name = malloc(strlen("STRUCT")+1);
+				strcpy(yylval.node->name, "STRUCT");
 				yylval.node->child = NULL;
 				yylval.node->sibling = NULL;
 				return STRUCT;
 			}
-{RETURN} {printf("RETURN\n");
+{RETURN} {
+			#ifdef debug 
+			printf("RETURN\n"); 
+			#endif
 				yylval.node = (struct TreeNode *)malloc(sizeof(TreeNode));
 				yylval.node->lineno = yylineno;
 				yylval.node->type = 4;
-				yylval.node->name = malloc(strlen(yytext)+1);
-				strcpy(yylval.node->name, yytext);
+				yylval.node->name = malloc(strlen("RETURN")+1);
+				strcpy(yylval.node->name, "RETURN");
 				yylval.node->child = NULL;
 				yylval.node->sibling = NULL;
 				return RETURN;
 			}
-{IF} {printf("IF\n");
+{IF} {
+	#ifdef debug 
+	printf("IF\n"); 
+	#endif
 				yylval.node = (struct TreeNode *)malloc(sizeof(TreeNode));
 				yylval.node->lineno = yylineno;
 				yylval.node->type = 4;
-				yylval.node->name = malloc(strlen(yytext)+1);
-				strcpy(yylval.node->name, yytext);
+				yylval.node->name = malloc(strlen("IF")+1);
+				strcpy(yylval.node->name, "IF");
 				yylval.node->child = NULL;
 				yylval.node->sibling = NULL;
 				return IF;
 			}
-{ELSE} {printf("ELSE\n");
+{ELSE} {
+	#ifdef debug 
+	printf("ELSE\n"); 
+	#endif
 				yylval.node = (struct TreeNode *)malloc(sizeof(TreeNode));
 				yylval.node->lineno = yylineno;
 				yylval.node->type = 4;
-				yylval.node->name = malloc(strlen(yytext)+1);
-				strcpy(yylval.node->name, yytext);
+				yylval.node->name = malloc(strlen("ELSE")+1);
+				strcpy(yylval.node->name, "ELSE");
 				yylval.node->child = NULL;
 				yylval.node->sibling = NULL;
 				return ELSE;
 }
-{WHILE} {printf("WHILE\n");
+{WHILE} {
+	#ifdef debug 
+	printf("WHILE\n"); 
+	#endif
 				yylval.node = (struct TreeNode *)malloc(sizeof(TreeNode));
 				yylval.node->lineno = yylineno;
 				yylval.node->type = 4;
-				yylval.node->name = malloc(strlen(yytext)+1);
-				strcpy(yylval.node->name, yytext);
+				yylval.node->name = malloc(strlen("WHILE")+1);
+				strcpy(yylval.node->name, "WHILE");
 				yylval.node->child = NULL;
 				yylval.node->sibling = NULL;
 				return WHILE;
 }
-{type} {printf("TYPE\n");
+{type} {
+	#ifdef debug 
+	printf("TYPE\n"); 
+	#endif
 				yylval.node = (struct TreeNode *)malloc(sizeof(TreeNode));
 				yylval.node->lineno = yylineno;
 				yylval.node->type = 5;
@@ -95,7 +121,10 @@ nestedcomments "/*"[^"*/"]*"/*"(.|\n)*"*/"
 				yylval.node->sibling = NULL;
 				return TYPE;
 }
-{id} {printf("ID\n");
+{id} {
+	#ifdef debug 
+	printf("ID\n"); 
+	#endif
 				yylval.node = (struct TreeNode *)malloc(sizeof(TreeNode));
 				yylval.node->lineno = yylineno;
 				yylval.node->type = 1;
@@ -105,7 +134,10 @@ nestedcomments "/*"[^"*/"]*"/*"(.|\n)*"*/"
 				yylval.node->sibling = NULL;
 				return ID;
 }
-{pfloat} {printf("POINTFLOAT\n");
+{pfloat} {
+	#ifdef debug 
+	printf("POINTFLOAT\n"); 
+	#endif
 				yylval.node = (struct TreeNode *)malloc(sizeof(TreeNode));
 				yylval.node->lineno = yylineno;
 				yylval.node->type = 3;
@@ -113,10 +145,13 @@ nestedcomments "/*"[^"*/"]*"/*"(.|\n)*"*/"
 				yylval.node->child = NULL;
 				yylval.node->sibling = NULL;
 				yylval.node->name = malloc(strlen("FLOAT")+1);
-				strcpy(yylval.node->name, yytext);
+				strcpy(yylval.node->name, "FLOAT");
 				return FLOAT;
 			}
-{efloat} {printf("EXPONENTFLOAT\n");
+{efloat} {
+	#ifdef debug 
+	printf("EXPONENTFLOAT\n"); 
+	#endif
 				yylval.node = (struct TreeNode *)malloc(sizeof(TreeNode));
 				yylval.node->lineno = yylineno;
 				yylval.node->type = 3;
@@ -124,32 +159,41 @@ nestedcomments "/*"[^"*/"]*"/*"(.|\n)*"*/"
 				yylval.node->child = NULL;
 				yylval.node->sibling = NULL;
 				yylval.node->name = malloc(strlen("FLOAT")+1);
-				strcpy(yylval.node->name, yytext);
+			 	strcpy(yylval.node->name, "FLOAT");
 				return FLOAT;}
-{notfloat} {printf("Error type A at line %d: Invalid FLOAT \'%s\'\n", yylineno, yytext);}
-{octint} {printf("OCTINT\n");
+{notfloat} {lexical_flag = 1; printf("Error type A at line %d: Illegal floating point number \'%s\'\n", yylineno, yytext); return FLOAT;}
+{octint} {
+	#ifdef debug 
+	printf("OCTINT\n"); 
+	#endif
 				yylval.node = (struct TreeNode *)malloc(sizeof(TreeNode));
 				yylval.node->lineno = yylineno;
 				yylval.node->type = 2;
-				yylval.node->type_int = atoi(yytext);
+				yylval.node->type_int = strtol(yytext, NULL, 8);
 				yylval.node->child = NULL;
 				yylval.node->sibling = NULL;
 				yylval.node->name = malloc(strlen("OCTINT")+1);
 				strcpy(yylval.node->name, "OCTINT");
 				return INT;}
-{notoctint} {printf("Error type A at line %d: Invalid OCTINT \'%s\'\n", yylineno, yytext);}
-{hexint} {printf("HEXINT\n");
+{notoctint} {lexical_flag = 1; printf("Error type A at line %d: Illegal octonary integer \'%s\'\n", yylineno, yytext); return INT;}
+{hexint} {
+	#ifdef debug 
+	printf("HEXINT\n"); 
+	#endif
 				yylval.node = (struct TreeNode *)malloc(sizeof(TreeNode));
 				yylval.node->lineno = yylineno;
 				yylval.node->type = 2;
-				yylval.node->type_int = atoi(yytext);
+				yylval.node->type_int = strtol(yytext, NULL, 16);
 				yylval.node->child = NULL;
 				yylval.node->sibling = NULL;
 				yylval.node->name = malloc(strlen("HEXINT")+1);
 				strcpy(yylval.node->name, "HEXINT");
 				return INT;}
-{nothexint} {printf("Error type A at line %d: Invalid HEXINT \'%s\'\n", yylineno, yytext);}
-{frontdecint}|{latterdecint}|"-2147483648" {printf("DECINT\n");
+{nothexint} {lexical_flag = 1; printf("Error type A at line %d: Illegal hexadecimal integer \'%s\'\n", yylineno, yytext); return INT;}
+{frontdecint}|{latterdecint}|"-2147483648" {
+	#ifdef debug 
+	printf("DECINT\n"); 
+	#endif
 				yylval.node = (struct TreeNode *)malloc(sizeof(TreeNode));
 				yylval.node->lineno = yylineno;
 				yylval.node->type = 2;
@@ -159,8 +203,11 @@ nestedcomments "/*"[^"*/"]*"/*"(.|\n)*"*/"
 				yylval.node->name = malloc(strlen("INT")+1);
 				strcpy(yylval.node->name, "INT");
 				return INT;}
-{notint} {printf("Error type A at line %d: int overflow \'%s\'\n", yylineno, yytext);}
-";" {printf("SEMI\n");
+{notint} {lexical_flag = 1; printf("Error type A at line %d: Illegal decimal integer \'%s\'\n", yylineno, yytext); return INT;}
+";" {
+	#ifdef debug 
+	printf("SEMI\n"); 
+	#endif
 			yylval.node = (struct TreeNode *)malloc(sizeof(TreeNode));
 			yylval.node->lineno = yylineno;
 			yylval.node->type = 4;
@@ -169,7 +216,10 @@ nestedcomments "/*"[^"*/"]*"/*"(.|\n)*"*/"
 			yylval.node->name = malloc(strlen("SEMI")+1);
 			strcpy(yylval.node->name, "SEMI");
 			return SEMI;}
-"," {printf("COMMA\n");
+"," {
+	#ifdef debug 
+	printf("COMMA\n"); 
+	#endif
 			yylval.node = (struct TreeNode *)malloc(sizeof(TreeNode));
 			yylval.node->lineno = yylineno;
 			yylval.node->type = 4;
@@ -178,7 +228,10 @@ nestedcomments "/*"[^"*/"]*"/*"(.|\n)*"*/"
 			yylval.node->name = malloc(strlen("COMMA")+1);
 			strcpy(yylval.node->name, "COMMA");
 			return COMMA;}
-"=" {printf("ASSIGNOP\n");
+"=" {
+	#ifdef debug 
+	printf("ASSIGNOP\n"); 
+	#endif
 			yylval.node = (struct TreeNode *)malloc(sizeof(TreeNode));
 			yylval.node->lineno = yylineno;
 			yylval.node->type = 4;
@@ -187,7 +240,10 @@ nestedcomments "/*"[^"*/"]*"/*"(.|\n)*"*/"
 			yylval.node->name = malloc(strlen("ASSIGNOP")+1);
 			strcpy(yylval.node->name, "ASSIGNOP");
 			return ASSIGNOP;}
-{relop} {printf("RELOP\n");
+{relop} {
+	#ifdef debug 
+	printf("RELOP\n"); 
+	#endif
 			yylval.node = (struct TreeNode *)malloc(sizeof(TreeNode));
 			yylval.node->lineno = yylineno;
 			yylval.node->type = 4;
@@ -196,14 +252,20 @@ nestedcomments "/*"[^"*/"]*"/*"(.|\n)*"*/"
 			yylval.node->name = malloc(strlen("RELOP")+1);
 			strcpy(yylval.node->name, "RELOP");
 			return RELOP;}
-"+" {printf("PLUS\n");
+"+" {
+	#ifdef debug 
+	printf("PLUS\n"); 
+	#endif
 			yylval.node = (struct TreeNode *)malloc(sizeof(TreeNode));
 			yylval.node->lineno = yylineno;
 			yylval.node->type = 4;
 			yylval.node->name = malloc(strlen("PLUS")+1);
 			strcpy(yylval.node->name, "PLUS");
 			return PLUS;}
-"-" {printf("MINUS\n");
+"-" {
+	#ifdef debug 
+	printf("MINUS\n"); 
+	#endif
 			yylval.node = (struct TreeNode *)malloc(sizeof(TreeNode));
 			yylval.node->lineno = yylineno;
 			yylval.node->type = 4;
@@ -212,7 +274,10 @@ nestedcomments "/*"[^"*/"]*"/*"(.|\n)*"*/"
 			yylval.node->name = malloc(strlen("MINUS")+1);
 			strcpy(yylval.node->name, "MINUS");
 			return MINUS;}
-"*" {printf("STAR\n");
+"*" {
+	#ifdef debug 
+	printf("STAR\n"); 
+	#endif
 			yylval.node = (struct TreeNode *)malloc(sizeof(TreeNode));
 			yylval.node->lineno = yylineno;
 			yylval.node->type = 4;
@@ -221,7 +286,10 @@ nestedcomments "/*"[^"*/"]*"/*"(.|\n)*"*/"
 			yylval.node->name = malloc(strlen("STAR")+1);
 			strcpy(yylval.node->name, "STAR");
 			return STAR;}
-"&&" {printf("AND\n");
+"&&" {
+	#ifdef debug 
+	printf("AND\n"); 
+	#endif
 			yylval.node = (struct TreeNode *)malloc(sizeof(TreeNode));
 			yylval.node->lineno = yylineno;
 			yylval.node->type = 4;
@@ -230,7 +298,10 @@ nestedcomments "/*"[^"*/"]*"/*"(.|\n)*"*/"
 			yylval.node->name = malloc(strlen("AND")+1);
 			strcpy(yylval.node->name, "AND");
 			return AND;}
-"||" {printf("OR\n");
+"||" {
+	#ifdef debug 
+	printf("OR\n"); 
+	#endif
 			yylval.node = (struct TreeNode *)malloc(sizeof(TreeNode));
 			yylval.node->lineno = yylineno;
 			yylval.node->type = 4;
@@ -239,7 +310,10 @@ nestedcomments "/*"[^"*/"]*"/*"(.|\n)*"*/"
 			yylval.node->name = malloc(strlen("OR")+1);
 			strcpy(yylval.node->name, "OR");
 			return OR;}
-"." {printf("DOT\n");
+"." {
+	#ifdef debug 
+	printf("DOT\n"); 
+	#endif
 			yylval.node = (struct TreeNode *)malloc(sizeof(TreeNode));
 			yylval.node->lineno = yylineno;
 			yylval.node->type = 4;
@@ -248,7 +322,10 @@ nestedcomments "/*"[^"*/"]*"/*"(.|\n)*"*/"
 			yylval.node->name = malloc(strlen("DOT")+1);
 			strcpy(yylval.node->name, "DOT");
 			return DOT;}
-"!" {printf("NOT\n");
+"!" {
+	#ifdef debug 
+	printf("NOT\n"); 
+	#endif
 			yylval.node = (struct TreeNode *)malloc(sizeof(TreeNode));
 			yylval.node->lineno = yylineno;
 			yylval.node->type = 4;
@@ -257,14 +334,20 @@ nestedcomments "/*"[^"*/"]*"/*"(.|\n)*"*/"
 			yylval.node->name = malloc(strlen("NOT")+1);
 			strcpy(yylval.node->name, "NOT");
 			return NOT;}
-"(" {printf("LP\n");
+"(" {
+	#ifdef debug 
+	printf("LP\n"); 
+	#endif
 			yylval.node = (struct TreeNode *)malloc(sizeof(TreeNode));
 			yylval.node->lineno = yylineno;
 			yylval.node->type = 4;
 			yylval.node->name = malloc(strlen("LP")+1);
 			strcpy(yylval.node->name, "LP");
 			return LP;}
-")" {printf("RP\n");
+")" {
+	#ifdef debug 
+	printf("RP\n"); 
+	#endif
 			yylval.node = (struct TreeNode *)malloc(sizeof(TreeNode));
 			yylval.node->lineno = yylineno;
 			yylval.node->type = 4;
@@ -273,7 +356,10 @@ nestedcomments "/*"[^"*/"]*"/*"(.|\n)*"*/"
 			yylval.node->name = malloc(strlen("RP")+1);
 			strcpy(yylval.node->name, "RP");
 			return RP;}
-"[" {printf("LB\n");
+"[" {
+	#ifdef debug 
+	printf("LB\n"); 
+	#endif
 			yylval.node = (struct TreeNode *)malloc(sizeof(TreeNode));
 			yylval.node->lineno = yylineno;
 			yylval.node->type = 4;
@@ -282,7 +368,10 @@ nestedcomments "/*"[^"*/"]*"/*"(.|\n)*"*/"
 			yylval.node->name = malloc(strlen("LB")+1);
 			strcpy(yylval.node->name, "LB");
 			return LB;}
-"]" {printf("RB\n");
+"]" {
+	#ifdef debug 
+	printf("RB\n"); 
+	#endif
 			yylval.node = (struct TreeNode *)malloc(sizeof(TreeNode));
 			yylval.node->lineno = yylineno;
 			yylval.node->type = 4;
@@ -291,7 +380,10 @@ nestedcomments "/*"[^"*/"]*"/*"(.|\n)*"*/"
 			yylval.node->name = malloc(strlen("RB")+1);
 			strcpy(yylval.node->name, "RB");
 			return RB;}
-"{" {printf("LC\n");
+"{" {
+	#ifdef debug 
+	printf("LC\n"); 
+	#endif
 			yylval.node = (struct TreeNode *)malloc(sizeof(TreeNode));
 			yylval.node->lineno = yylineno;
 			yylval.node->type = 4;
@@ -300,7 +392,10 @@ nestedcomments "/*"[^"*/"]*"/*"(.|\n)*"*/"
 			yylval.node->name = malloc(strlen("LC")+1);
 			strcpy(yylval.node->name, "LC");
 			return LC;}
-"}" {printf("RC\n");
+"}" {
+	#ifdef debug 
+	printf("RC\n"); 
+	#endif
 			yylval.node = (struct TreeNode *)malloc(sizeof(TreeNode));
 			yylval.node->lineno = yylineno;
 			yylval.node->type = 4;
@@ -310,7 +405,10 @@ nestedcomments "/*"[^"*/"]*"/*"(.|\n)*"*/"
 			strcpy(yylval.node->name, "RC");
 			return RC;}
 {Blankspace} {printf("");}
-"/" {printf("DIV\n");
+"/" {
+	#ifdef debug 
+	printf("DIV\n"); 
+	#endif
 			yylval.node = (struct TreeNode *)malloc(sizeof(TreeNode));
 			yylval.node->lineno = yylineno;
 			yylval.node->type = 4;
@@ -320,5 +418,5 @@ nestedcomments "/*"[^"*/"]*"/*"(.|\n)*"*/"
 			strcpy(yylval.node->name, "DIV");
 			return DIV;}
 \n {yycolumn = 1; }
-. {printf("Error type A at line %d: Mysterious characters \'%s\'\n", yylineno, yytext);}
+. { lexical_flag = 1; printf("Error type A at line %d: Mysterious characters \'%s\'\n", yylineno, yytext);}
 %%

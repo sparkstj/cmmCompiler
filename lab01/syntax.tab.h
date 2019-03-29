@@ -85,7 +85,7 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 80 "syntax.y" /* yacc.c:1927  */
+#line 81 "syntax.y" /* yacc.c:1927  */
 
 	struct TreeNode * node;
 
