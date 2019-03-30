@@ -13,9 +13,9 @@ This is a collection of compiler course labs, all together it would leads to a c
   - `main.c` contains some integration code. This overall lab can be compiled by makefile or use the following command lines.
 
     -  ``` bison -d syntax.y 
-      bison -d syntax.y
+      bison -d syntax.y 
       flex lexical.l
-      gcc main.c syntax.tab.c -ll -ly -o parser
+      gcc main.c syntax.tab.c -ll -ly -o parser (for mac os)
       ./parser [test url]
        ```
 
