@@ -1,0 +1,12 @@
+struct {
+    int a,c;
+    float b[2][3];
+}test;
+
+int main(int a, int b[1][4]) 
+{
+    int i = 0;
+    int x[2][3];
+    z = i;
+    return 0;
+}
