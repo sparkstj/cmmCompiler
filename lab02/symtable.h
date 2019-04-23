@@ -1,11 +1,12 @@
-#ifndef __SYMTABLE_H__
-#define __SYMTABLE_H__
+#ifndef __SymTable_H__
+#define __SymTable_H__
 
 
 typedef struct Type_* Type;
 typedef struct FieldList_* FieldList;
-typedef struct Symtable_ * Symtable;
+typedef struct SymTable_ * SymTable;
 typedef struct TreeNode_ * TreeNode;
+typedef struct FuncTable_ * FuncTable;
 
 struct TreeNode_{
 		int lineno;
@@ -17,13 +18,24 @@ struct TreeNode_{
 		struct TreeNode_ * sibling;
 }Node;
 
-struct Symtable_
+struct SymTable_
 {
 	char * name;
 	Type type;
-	Symtable next;
-};
+	SymTable next;
+}SymTableNode;
 
+SymTable Head; // the head of symbol table;
+
+struct FuncTable_ 
+{
+	char * name;
+	Type returnType;
+	FieldList VarList;
+	FuncTable next;
+}FuncNode;
+
+FuncTable FuncHead;
 
 struct Type_
 {
@@ -33,6 +45,7 @@ struct Type_
 		struct {Type elem; int size;} array;
 		FieldList structure;
 	}u;
+	char * StructName;
 }TypeNode;
 
 struct FieldList_ {
@@ -41,7 +54,7 @@ struct FieldList_ {
 	FieldList tail;
 }Field;
 
-
+void Debugger();
 void SemanticAnalysis(struct TreeNode_ *);
 
 #endif

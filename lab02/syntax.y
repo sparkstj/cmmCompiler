@@ -38,6 +38,7 @@
 			if (strcmp(root->name, "empty") != 0) {
 				for (int i = 0; i < layer; i++) 
 					printf("  ");
+				printf("[%d]",layer);
 				switch (root->type){
 					case 0:
 						printf("%s (%d)\n", root->name, root->lineno);
@@ -59,6 +60,7 @@
 						break;
 				}
 			}
+			
 			struct TreeNode_ *temp = root->child;
 			while (temp) {
 				printTree(temp,layer+1);
@@ -95,7 +97,7 @@
 /* rules */
 /* High-level Definitions */
 
-Program : ExtDefList { $$ = create_node("Program", @$.first_line, ""); add_child($$,$1); printTree($$, 0); SemanticAnalysis($$);}
+Program : ExtDefList { $$ = create_node("Program", @$.first_line, ""); add_child($$,$1); printTree($$, 0); SemanticAnalysis($$); Debugger();}
 	;
 
 ExtDefList : ExtDef ExtDefList {$$ = create_node("ExtDefList", @$.first_line, ""); add_child($$,$1); add_sibling($1,$2);}
