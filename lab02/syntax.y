@@ -97,7 +97,7 @@
 /* rules */
 /* High-level Definitions */
 
-Program : ExtDefList { $$ = create_node("Program", @$.first_line, ""); add_child($$,$1); printTree($$, 0); SemanticAnalysis($$); Debugger();}
+Program : ExtDefList { $$ = create_node("Program", @$.first_line, ""); add_child($$,$1); printTree($$, 0); SemanticAnalysis($$); Debugger(); check($$);}
 	;
 
 ExtDefList : ExtDef ExtDefList {$$ = create_node("ExtDefList", @$.first_line, ""); add_child($$,$1); add_sibling($1,$2);}

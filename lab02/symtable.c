@@ -1,6 +1,71 @@
 #include <stdio.h>
 #include "symtable.h"
-//#define debug_1
+#define debug_1
+
+static void checkSymTable(char * id, int line) {
+    // check Symbol Table for id, and if not found print error.
+    int numofitems = 0;
+    SymTable temp = Head;
+    SymTable store = malloc(sizeof(SymTableNode));
+    while (temp) {
+        // search for item has the same id, if more than one, triggers an error.
+        if (strcmp(temp->name, id) == 0) {
+            numofitems = numofitems + 1;
+            store = temp;
+        }
+        temp = temp->next;
+    }
+    if (numofitems > 0) {
+        char msg[128];
+        if (store->type->kind != STRUCTURE) {
+            sprintf(msg, "Redefined Variable [%s]", id);
+            error(3, line, msg);
+        }
+        else {
+            sprintf(msg, "Redefined Struct [%s]", id);
+            error(16, line, msg);
+        }
+        
+    }  
+    return ;
+}
+
+static void checkStructMember(char * id, Type target, int line) {
+    // got the correct struct;
+    int numofmember = 0;
+    FieldList member = target->u.structure;
+    while (member) {
+        if (strcmp(id, member->name) == 0) {
+            numofmember = numofmember + 1;
+        }
+        if (strcmp(member->name, "empty") == 0) break;
+        member = member->tail;
+    }
+    //printf("%d\n", numofmember);
+    if (numofmember > 0) {
+        char msg[128];
+        sprintf(msg, "Redefined Struct [%s] Member [%s]", id, target->StructName);
+        error(15, line, msg);
+    }
+    return ;
+}
+
+static void checkFuncTable(char * id, int line) {
+    FuncTable cache = FuncHead;
+    int numoffuncs = 0;
+    while (cache) {
+        if (strcmp(cache->name, id) == 0) {
+            numoffuncs = numoffuncs + 1;
+        }
+        cache = cache->next;
+    }
+    if (numoffuncs > 0) {
+        char msg[128];
+        sprintf(msg, "Redefined Function [%s]", id);
+        error(4, line, msg);
+    }
+    return ;
+}
 
 int getsize(Type type) {
     int kind = type->kind;
@@ -9,13 +74,13 @@ int getsize(Type type) {
     switch (kind) {
         case 0:
             //printf("%d\n",type->u.basic);
-            return type->u.basic == 0 ? 4 : 8;
+            sum = type->u.basic == 0 ? 4 : 8;
             break;
         case 1:
             //printf("ElemTypeKind %d\n",type->u.array.elem->kind);
             basicsize = getsize(type->u.array.elem);
-            printf("%d\n", basicsize);
-            return basicsize * (type->u.array.size);
+            //printf("%d\n", basicsize);
+            sum = basicsize * (type->u.array.size);
             break;
         case 2:
             structure = type->u.structure;
@@ -28,16 +93,18 @@ int getsize(Type type) {
                 structure = structure->tail;
                 if (strcmp(structure->name,"empty")==0) break;
             }
-            
-            return sum;
             break;
     }
+    return sum;
 }
 
-void AddSymTable(char * id, Type type) {
+void AddSymTable(char * id, Type type, int line) {
     #ifdef debug_1
         printf("ID %s, KIND %d\n",id, type->kind);
     #endif // 
+    //printf("check\n");
+    checkSymTable(id, line);
+    //printf("aftercheck\n");
     SymTable new = malloc(sizeof(SymTableNode));
     new->name = id;
     new->type = type;
@@ -90,6 +157,36 @@ Type getType(TreeNode specifier) {
                 printf("look up this struct in symbol table.\n");
             #endif
             //look up this struct in symbol table.
+            SymTable temp = Head;
+            char * struct_id = tag->child->name;
+            int numofstruct = 0;
+            Type store;
+            char msg[128];
+            //printf("%s\n", struct_id);
+            while (temp) {
+                if (strcmp(struct_id, temp->name) == 0) {
+                    if (temp->type->kind != STRUCTURE) {    
+                        sprintf(msg, "Struct [%s] Name Duplicate with Variable", struct_id);
+                        error(16, tag->lineno, msg);
+                    }
+                    else {
+                        numofstruct = numofstruct + 1;
+                        store = temp->type;
+                    }
+                }
+                temp = temp->next;
+            }
+            //printf("numofstruct: %d", numofstruct);
+            if (numofstruct == 0) {
+                sprintf(msg, "Struct [%s] Undefined.\n", struct_id);
+                error(17, tag->lineno, msg);
+            } else if (numofstruct > 1) {
+                sprintf(msg, "Struct [%s] Name Duplicate with other Struct", struct_id);
+                error(16, tag->lineno, msg);
+            } else {
+                memcpy(type, store, sizeof(TypeNode));
+            }
+            //printf("type %s\n", store->u.structure->name);
         }
         else {
             if (tag->child) {
@@ -99,28 +196,33 @@ Type getType(TreeNode specifier) {
             }
             type->u.structure = (FieldList) malloc(sizeof(Field)); 
             FieldList structureField = type->u.structure;
+            structureField->name = "empty";
+            //printf("%s\n", structureField->name);
             TreeNode DefList = tag->sibling->sibling; // get DefList
             while (DefList) {
                 TreeNode Def = DefList->child; // get Def
-                Type type = getType(Def->child); //get type
+                Type temp_type = getType(Def->child); //get type
                 TreeNode DecList = Def->child->sibling; 
                 //get DecList
                 TreeNode Dec = DecList->child; // get Dec
                 while (DecList) {
                     int num = 0; int ans = 1;
                     char * id = TraverseDec(Dec, &num, &ans);
+                    checkStructMember(id, type, DefList->lineno);
                     structureField->name = id;
                     structureField->type = malloc(sizeof(TypeNode));
                     if (num > 1) {
                         structureField->type->u.array.elem = malloc(sizeof(TypeNode));
-                        ans = ans * getsize(type);
+                        ans = ans * getsize(temp_type);
                         structureField->type->u.array.size = ans;
-                        structureField->type->u.array.elem = type;
+                        structureField->type->u.array.elem = temp_type;
+                        structureField->type->u.array.dimension = num - 1;
                         structureField->type->kind = ARRAY;
                     }
-                    else structureField->type = type;
+                    else structureField->type = temp_type;
                     structureField->tail = (FieldList) malloc(sizeof(Field));
                     structureField = structureField->tail;
+                    structureField->name = "empty";
                     //printf("GetType id%s, type %d\n",structureField->name,structureField->type->kind);
                     if (Dec->sibling == NULL) break;
                     DecList = Dec->sibling->sibling;
@@ -128,8 +230,9 @@ Type getType(TreeNode specifier) {
                 }
                 DefList = Def->sibling;
                 if(strcmp(DefList->name,"empty")==0) break;
+                
             } 
-            structureField->name = "empty";
+            //structureField->name = "empty";
             //printf("%d\n",type->kind);
         }
     }
@@ -154,6 +257,7 @@ void AnalyzeExtDecList(Type type, TreeNode ExtDecList) { // Analysis ExDef -> Sp
             ans = ans * getsize(type);
             modified->u.array.elem = malloc(sizeof(TypeNode));
             modified->u.array.elem = type;
+            modified->u.array.dimension = num - 1;
             //printf("ArrayType %d\n", modified->u.array.elem->kind);
             modified->kind = ARRAY;
             //printf("ArrayType %d\n", modified->u.array.elem->kind);
@@ -164,7 +268,7 @@ void AnalyzeExtDecList(Type type, TreeNode ExtDecList) { // Analysis ExDef -> Sp
             //printf("This is in ExDef -> Specifier ExtDecList SEMI, ExtDecList\n");
             //printf("ID %s, kind: %d\n", id, type->kind);
         #endif // debug_1
-        AddSymTable(id, modified);
+        AddSymTable(id, modified, ExtDecList->lineno);
         if (VarDec->sibling == NULL) break;
         ExtDecList = VarDec->sibling->sibling;
         VarDec = ExtDecList->child;
@@ -172,44 +276,49 @@ void AnalyzeExtDecList(Type type, TreeNode ExtDecList) { // Analysis ExDef -> Sp
 }
 
 void AnalyzeFuncDec(Type type, TreeNode FunDec) { // Analysis ExtDef -> Specifier FuncDec CompSt
+    int hasVarList = 0;
     TreeNode id = FunDec->child;
     TreeNode VarList = id->sibling->sibling;
+    if (strcmp(VarList->name, "RP") == 0) hasVarList = 1;
+    checkFuncTable(id->name, id->lineno);
     FuncTable new = malloc(sizeof(FuncNode));
     new->name = id->name;
     new->returnType = type;
+    new->isDefined = 1; // is Defined
     new->next = FuncHead; // add to FuncTable List
     FuncHead = new; 
     // Analyze VarList
     FieldList newVar;
-    if (VarList) {
+    if (hasVarList == 0) {
         new->VarList = malloc(sizeof(Field));
         newVar = new->VarList;
-    }
-    while (VarList) { // Analyze one Paramdec
-        TreeNode ParamDec = VarList->child;
-        TreeNode specifier = ParamDec->child;
-        Type VarType = getType(specifier);
-        TreeNode VarDec = specifier->sibling;
-        int num = 0;
-        int ans = 1;
-        char * id = TraverseDec(VarDec, &num, &ans);
-        newVar->name = id;
-        Type modified = malloc(sizeof(TypeNode));
-        if (num > 1) {
-            ans = ans * getsize(VarType);
-            modified->u.array.elem = malloc(sizeof(TypeNode));
-            modified->u.array.elem = VarType;
-            modified->kind = ARRAY;
-            modified->u.array.size = ans;
+        while (VarList) { // Analyze one Paramdec
+            TreeNode ParamDec = VarList->child;
+            TreeNode specifier = ParamDec->child;
+            Type VarType = getType(specifier);
+            TreeNode VarDec = specifier->sibling;
+            int num = 0;
+            int ans = 1;
+            char * id = TraverseDec(VarDec, &num, &ans);
+            newVar->name = id;
+            Type modified = malloc(sizeof(TypeNode));
+            if (num > 1) {
+                ans = ans * getsize(VarType);
+                modified->u.array.elem = malloc(sizeof(TypeNode));
+                modified->u.array.elem = VarType;
+                modified->u.array.dimension = num - 1;
+                modified->kind = ARRAY;
+                modified->u.array.size = ans;
+            }
+            else modified = VarType;
+            newVar->type = modified;
+            newVar->tail = malloc(sizeof(Field));
+            newVar = newVar->tail;
+            if (ParamDec->sibling == NULL) break;
+            VarList = ParamDec->sibling->sibling;
         }
-        else modified = VarType;
-        newVar->type = modified;
-        newVar->tail = malloc(sizeof(Field));
-        newVar = newVar->tail;
-        if (ParamDec->sibling == NULL) break;
-        VarList = ParamDec->sibling->sibling;
+        newVar->name="empty";
     }
-    newVar->name="empty";
     return ;
 }
 
@@ -224,7 +333,7 @@ void AddExtDef(TreeNode root) {
         AnalyzeFuncDec(type, Sibling);// not sure around parameters.
     }
     else {
-        AddSymTable(type->StructName, type); //  ExtDef -> Specifier Semi
+        AddSymTable(type->StructName, type, specifier->lineno); //  ExtDef -> Specifier Semi
     }
     #ifdef debug_1
     #endif
@@ -244,11 +353,12 @@ void AddDef(TreeNode root) { // Def -> Specifier DecList SEMI
             ans = ans * getsize(type);
             modified->u.array.elem = malloc(sizeof(TypeNode));
             modified->u.array.elem = type;
+            modified->u.array.dimension = num - 1;
             modified->kind = ARRAY;
             modified->u.array.size = ans;
         }
         else modified = type;
-        AddSymTable(id, type);
+        AddSymTable(id, type, DecList->lineno);
         if (Dec->sibling == NULL) break;
         DecList = Dec->sibling->sibling;
     }
@@ -256,11 +366,14 @@ void AddDef(TreeNode root) { // Def -> Specifier DecList SEMI
 }
 
 void SemanticAnalysis(TreeNode root){
-    struct TreeNode_ * temp = root->child;
     if (root) {
+        //printf("%s\n", root->name);
+        struct TreeNode_ * temp = root->child;
         if (strcmp(root->name, "ExtDef") == 0) {
             AddExtDef(root);
+            //printf("Hellp\n");
             temp = root->child->sibling->sibling;
+            //printf("%s\n", temp->name);
         }
         if (strcmp(root->name, "Def") == 0) {
             AddDef(root);
@@ -280,15 +393,14 @@ void Debugger() {
     while (temp) {
         printf("Name: %s, Type.Kind%d\n",temp->name, temp->type->kind);
         if (temp->type->kind == ARRAY) {
-            printf("Type: %d, Size: %d\n", temp->type->u.array.elem->kind, temp->type->u.array.size);
+            printf("Type: %d, Size: %d, Dimension: %d\n", temp->type->u.array.elem->kind, temp->type->u.array.size, temp->type->u.array.dimension);
         }
         if (temp->type->kind == STRUCTURE) {
             FieldList temp2 = temp->type->u.structure;
             while (temp2) {
                 if (strcmp(temp2->name, "empty") == 0) break;
                 printf("struct :: name %s, type %d\n", temp2->name, temp2->type->kind);
-                temp2 = temp2->tail;
-                
+                temp2 = temp2->tail;  
             }
             
         }

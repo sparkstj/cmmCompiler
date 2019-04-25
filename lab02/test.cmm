@@ -1,16 +1,18 @@
-struct {
-    int a1,c1,cc;
-    float b1[2][3];
-}test[1][2];
-
-struct hello{
+struct test{
     int a2,c2;
     float b2[2][3];
 };
 
+int hello(){
+    int hello_j = 1;
+    return hello_j;
+}
+
 int main(int a3, int b4[1][4]) 
 {
-    int i = 0;
+    int i,j,k;
     int x[2][3];
+    struct test a;
+    z = 0;   
     return 0;
 }

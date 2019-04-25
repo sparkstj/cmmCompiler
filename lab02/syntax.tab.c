@@ -1527,7 +1527,7 @@ yyreduce:
     {
         case 2:
 #line 100 "syntax.y" /* yacc.c:1667  */
-    { (yyval.node) = create_node("Program", (yyloc).first_line, ""); add_child((yyval.node),(yyvsp[0].node)); printTree((yyval.node), 0); SemanticAnalysis((yyval.node)); Debugger();}
+    { (yyval.node) = create_node("Program", (yyloc).first_line, ""); add_child((yyval.node),(yyvsp[0].node)); printTree((yyval.node), 0); SemanticAnalysis((yyval.node)); Debugger(); check((yyval.node));}
 #line 1532 "syntax.tab.c" /* yacc.c:1667  */
     break;
 

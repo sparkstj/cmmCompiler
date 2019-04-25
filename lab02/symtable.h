@@ -1,6 +1,8 @@
 #ifndef __SymTable_H__
 #define __SymTable_H__
 
+#include <stdlib.h>
+#include <string.h>
 
 typedef struct Type_* Type;
 typedef struct FieldList_* FieldList;
@@ -16,6 +18,7 @@ struct TreeNode_{
 		float type_float;
 		struct TreeNode_ * child;
 		struct TreeNode_ * sibling;
+		Type ExpType;
 }Node;
 
 struct SymTable_
@@ -33,16 +36,17 @@ struct FuncTable_
 	Type returnType;
 	FieldList VarList;
 	FuncTable next;
+	int isDefined;
 }FuncNode;
 
 FuncTable FuncHead;
 
 struct Type_
 {
-	enum {BASIC, ARRAY, STRUCTURE } kind;
+	enum {BASIC, ARRAY, STRUCTURE, UNDEFINED} kind;
 	union {
 		int basic;
-		struct {Type elem; int size;} array;
+		struct {Type elem; int size; int dimension;} array;
 		FieldList structure;
 	}u;
 	char * StructName;
@@ -54,7 +58,12 @@ struct FieldList_ {
 	FieldList tail;
 }Field;
 
+
+
 void Debugger();
 void SemanticAnalysis(struct TreeNode_ *);
+void error(int, int, char *);
+void check(TreeNode);
+
 
 #endif
