@@ -66,7 +66,7 @@ static void checkStructMember(char * id, Type target, int line) { //only check f
     //printf("numofMember found %d\n", numofmember);
     if (numofmember > 0) {
         char msg[128];
-        sprintf(msg, "Redefined Struct [%s] Member [%s]", id, target->StructName);
+        sprintf(msg, "Redefined Struct [%s] Member in [%s]", id, target->StructName);
         error(15, line, msg);
     }
     //printf("Leave checkStructMember\n");
@@ -144,8 +144,10 @@ char * TraverseDec(TreeNode root, int *num, int *ans){
     //printf("Enter TraverseDec.\n");
     char * return_id;
     if (root) {      
-        if (root->type == 1) 
+        if (root->type == 1) {
             return_id = root->name;
+            //printf("%s", root->name);
+        }
         else return_id = NULL;
         //printf("Get primary return_id.\n");
         if (root->type == 2)
@@ -161,7 +163,9 @@ char * TraverseDec(TreeNode root, int *num, int *ans){
             //printf("Enter temp iteration.\n");
             char * rd = TraverseDec(temp, num, ans);
             //printf("After TraverseDec temp:%s.\n",temp->name);
-            if (rd) return_id = rd;
+            if (rd) {
+                return_id = rd;
+                break;}
             //printf("After get rd %s\n",rd);
             temp = temp->sibling;
         }
@@ -408,6 +412,7 @@ void AddDef(TreeNode root) { // Def -> Specifier DecList SEMI
     TreeNode DecList = Specifier->sibling; // DecList -> Dec | Dec COMMA DecList
     Type type = getType(Specifier);
     while (DecList) {
+
         TreeNode Dec = DecList->child;
         int num = 0; int ans = 1;
         char * id = TraverseDec(Dec, &num, &ans);
@@ -420,7 +425,8 @@ void AddDef(TreeNode root) { // Def -> Specifier DecList SEMI
             modified->kind = ARRAY;
             modified->u.array.size = ans;
         }
-        else modified = type;
+        else memcpy(modified, type, sizeof(TypeNode));
+        //printf("id %s kind %d\n",id, modified->kind);
         AddSymTable(id, modified, DecList->lineno);
         if (Dec->sibling == NULL) break;
         DecList = Dec->sibling->sibling;

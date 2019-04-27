@@ -84,7 +84,7 @@ static Type checkStructMember(char * id, Type target, int line) {
     }
     if (numofmember == 0) {
         char msg[128];
-        sprintf(msg, "Non-existent Struct [%s] Member [%s]", id, target->StructName);
+        sprintf(msg, "Non-existent Struct [%s] Member in [%s]", id, target->StructName);
         error(14, line, msg);
         target_type->kind = UNDEFINED;
     }else if (numofmember > 1) {
