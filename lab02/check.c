@@ -28,6 +28,8 @@ int isEqual(Type a, Type b) {
                 cachea = cachea->tail;
                 cacheb = cacheb->tail; 
             }
+            if ((cachea == NULL) && (cacheb == NULL)) {}
+            else flag = 1;
         }
         else flag = 1;
     }
