@@ -353,7 +353,7 @@ void checkBigExp(TreeNode Exp) {
                     cache2 = cache2->tail;
                     
                 }
-                if ((cache1==NULL) && (cache2==NULL)) {printf("yes\n");}
+                if ((cache1==NULL) && (cache2==NULL)) {}
                 else varflag = 1;
                 if (varflag != 0) {
                     char msg[128];

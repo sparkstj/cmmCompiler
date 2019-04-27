@@ -8,11 +8,16 @@ struct hello{
     float b2[2][3];
 };
 
+int sayhello(float a){
+    return 0;
+}
+
 int main(int a3, int b4[1][4]) 
 {
     int i = 0;
     int x[2][3];
     struct hello a;
     test[0][1].b1[1][2] = a.b2[1][0];
+    sayhello(a.b2[1][0]);
     return a.b2[1][0];
 }

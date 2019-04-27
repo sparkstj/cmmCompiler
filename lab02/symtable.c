@@ -297,7 +297,7 @@ void AnalyzeExtDecList(Type type, TreeNode ExtDecList) { // Analysis ExDef -> Sp
         int num = 0;
         int ans = 1;
         id = TraverseDec(VarDec, &num, &ans);
-        printf("%s has %d VarDec\n", id, num);
+        //printf("%s has %d VarDec\n", id, num);
         Type modified = malloc(sizeof(TypeNode));
         if (num > 1) {
             //printf("num %d, typekind:%d\n",num, type->kind);
