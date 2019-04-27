@@ -1,18 +1,9 @@
-struct test{
-    int a2,c2;
-    float b2[2][3];
-};
-
-int hello(){
-    int hello_j = 1;
-    return hello_j;
-}
-
-int main(int a3, int b4[1][4]) 
+int main() 
 {
-    int i,j,k;
-    int x[2][3];
-    struct test a;
-    z = 0;   
+    int i,j;
+    float k,k2;
+    i = 9;
+    k = 2.3;
+    j = 9 + 2.3;
     return 0;
 }

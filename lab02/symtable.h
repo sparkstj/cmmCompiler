@@ -19,6 +19,7 @@ struct TreeNode_{
 		struct TreeNode_ * child;
 		struct TreeNode_ * sibling;
 		Type ExpType;
+		int isLeft;
 }Node;
 
 struct SymTable_
@@ -64,6 +65,9 @@ void Debugger();
 void SemanticAnalysis(struct TreeNode_ *);
 void error(int, int, char *);
 void check(TreeNode);
-
+void checkBigExp(TreeNode);
+int isEqual(Type, Type);
+Type checkSymTable(char *, int);
+void insertField(FieldList*, FieldList*);
 
 #endif

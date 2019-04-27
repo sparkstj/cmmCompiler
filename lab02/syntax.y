@@ -60,13 +60,14 @@
 						break;
 				}
 			}
-			
-			struct TreeNode_ *temp = root->child;
-			while (temp) {
-				printTree(temp,layer+1);
-				temp = temp->sibling;
-			}
+		struct TreeNode_ *temp = root->child;
+		while (temp) {
+			//printf("temp name %s\n", temp->name);
+			printTree(temp,layer+1);
+			temp = temp->sibling;
+		}
 	}
+	return ;
 }
 
 %}
@@ -97,7 +98,11 @@
 /* rules */
 /* High-level Definitions */
 
-Program : ExtDefList { $$ = create_node("Program", @$.first_line, ""); add_child($$,$1); printTree($$, 0); SemanticAnalysis($$); Debugger(); check($$);}
+Program : ExtDefList { $$ = create_node("Program", @$.first_line, ""); add_child($$,$1); 
+//printTree($$, 0); 
+SemanticAnalysis($$); 
+//Debugger(); 
+check($$);}
 	;
 
 ExtDefList : ExtDef ExtDefList {$$ = create_node("ExtDefList", @$.first_line, ""); add_child($$,$1); add_sibling($1,$2);}
