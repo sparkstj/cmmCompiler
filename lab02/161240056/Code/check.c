@@ -48,7 +48,7 @@ Type checkSymTable(char * id, int line) {
         // search for item has the same id, if more than one, triggers an error.
         if (strcmp(temp->name, id) == 0) {
             numofitems = numofitems + 1;
-            memcpy(store1, temp, sizeof(TypeNode));
+            memcpy(store1, temp, sizeof(SymTableNode));
         }
         temp = temp->next;
     }
@@ -195,9 +195,10 @@ void checkBigExp(TreeNode Exp) {
                     if (temp1->isLeft == 0) {
                         error(6, Exp->lineno, "The left-hand side of an assignment must be an variable");
                     }
-                    Exp->ExpType = temp1->ExpType;
                 } 
                 else error(5, Exp->lineno, "Type mismatched for assignment");
+                Exp->ExpType = temp1->ExpType;
+                Exp->isLeft = 1;
             }          
             else if (strcmp(temp2->name,"AND")==0) {
                 Type type_int = malloc(sizeof(TypeNode));
@@ -249,7 +250,6 @@ void checkBigExp(TreeNode Exp) {
             }
         }
         else if (strcmp(temp1->name, "Exp") == 0) {// Exp Dot ID
-            Exp->isLeft = 1;
             checkBigExp(temp1);
             if (temp1->ExpType->kind == STRUCTURE) {   
                 //printf("hello\n");             
@@ -258,6 +258,7 @@ void checkBigExp(TreeNode Exp) {
                 //if (Exp->ExpType->kind == ARRAY) printf("%s, dimension%d\n", temp3->name,Exp->ExpType->u.array.dimension);
             }
             else error(13, Exp->lineno, "Illegal use of [.]");
+            Exp->isLeft = temp1->isLeft;
         }
         else if (temp1->type == 1) { //ID LP RP
             FuncTable target_func;
@@ -296,6 +297,7 @@ void checkBigExp(TreeNode Exp) {
         else if (temp1->type == 4) { //LP Exp RP
             checkBigExp(temp2);
             Exp->ExpType = temp2->ExpType;
+            Exp->isLeft = temp2->isLeft;
         }
     }
     else if (numofChild == 4) {
@@ -503,11 +505,28 @@ void checkExtDef(TreeNode root) {
     return ;
 }
 
+void checkIniAssignment(TreeNode temp, Type defType) {
+    if (temp) {
+        if (strcmp(temp->name, "Exp") == 0) {
+            //Debugger();
+            checkBigExp(temp);
+            if (isEqual(temp->ExpType, defType) == 0) {}
+            else error(5, temp->lineno, "Type mismatched for assignment at initialization");
+            temp = temp->sibling;
+        }
+        else temp = temp->child;
+        while (temp) {
+            checkIniAssignment(temp, defType);
+            temp = temp->sibling;
+        }
+    }
+}
 void check(TreeNode root) {
     if (root) {
         #ifdef debug_2
         //printf("Enter Check\n");
         #endif
+        //printf("check %s\n", root->name);
         TreeNode temp;
         if (strcmp(root->name,"Exp") == 0){
             checkBigExp(root);

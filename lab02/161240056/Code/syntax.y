@@ -194,7 +194,6 @@ Exp : Exp ASSIGNOP Exp {$$ = create_node("Exp", @$.first_line, ""); add_child($$
 	| ID {$$ = create_node("Exp", @$.first_line, ""); add_child($$,$1); }
 	| INT {$$ = create_node("Exp", @$.first_line, ""); add_child($$,$1); }
 	| FLOAT {$$ = create_node("Exp", @$.first_line, ""); add_child($$,$1); }
-	| error RP
 	| Exp LB error RB 
 	;
 Args : Exp COMMA Args {$$ = create_node("Args", @$.first_line, ""); add_child($$,$1); add_sibling($1,$2); add_sibling($2,$3);}

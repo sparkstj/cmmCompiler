@@ -69,5 +69,6 @@ void checkBigExp(TreeNode);
 int isEqual(Type, Type);
 Type checkSymTable(char *, int);
 void insertField(FieldList*, FieldList*);
-
+Type getType(TreeNode );
+void checkIniAssignment(TreeNode , Type );
 #endif

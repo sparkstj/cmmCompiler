@@ -217,7 +217,7 @@ Type getType(TreeNode specifier) {
             }
             //printf("numofstruct: %d", numofstruct);
             if (numofstruct == 0) {
-                sprintf(msg, "Struct [%s] Undefined.\n", struct_id);
+                sprintf(msg, "Struct [%s] Undefined", struct_id);
                 error(17, tag->lineno, msg);
             } else if (numofstruct > 1) {
                 sprintf(msg, "Struct [%s] Name Duplicate with other Struct", struct_id);
@@ -233,7 +233,7 @@ Type getType(TreeNode specifier) {
                 //printf("Struct Def: Have OptTag %s\n", tag->child->name);
                 type->StructName = tag->child->name; // get struct name if possible, this is to get global definition name.
                 //printf("StoreinType %s\n", type->StructName);
-            }
+            } else type->StructName = "EMPTY";
             FieldList structureField;
             type->u.structure = NULL;
             //FieldList structVarHead = NULL;
@@ -241,6 +241,7 @@ Type getType(TreeNode specifier) {
             TreeNode DefList = tag->sibling->sibling; // get DefList
             //printf("Get DefList Successfully\n");
             while (DefList) { 
+                if (strcmp(DefList->name, "DefList") != 0) break;
                 TreeNode Def = DefList->child; // get Def
                 //printf("Get Def Successfully\n");
                 Type temp_type = getType(Def->child); //get type
@@ -275,6 +276,11 @@ Type getType(TreeNode specifier) {
                     //structureField->tail = structVarHead;
                     //structVarHead = structureField;
                     //printf("GetType id%s, type %d\n",structureField->name,structureField->type->kind);
+                    if (Dec->child->sibling) {
+                        char msg[128];
+                        sprintf(msg,"Intialization of [%s] in Struct [%s]", id, type->StructName);
+                        error(15, Dec->lineno, msg);
+                    }
                     if (Dec->sibling == NULL) break;
                     DecList = Dec->sibling->sibling;
                     Dec = DecList->child;
@@ -284,6 +290,7 @@ Type getType(TreeNode specifier) {
             } 
             //type->u.structure = malloc(sizeof(Field));
             //type->u.structure = structVarHead;
+            AddSymTable(type->StructName, type, specifier->lineno);
         }
     }
     return type;
@@ -302,10 +309,11 @@ void AnalyzeExtDecList(Type type, TreeNode ExtDecList) { // Analysis ExDef -> Sp
         int ans = 1;
         id = TraverseDec(VarDec, &num, &ans);
         //printf("%s has %d VarDec\n", id, num);
-        Type modified = malloc(sizeof(TypeNode));
+        modified = malloc(sizeof(TypeNode));
         if (num > 1) {
             //printf("num %d, typekind:%d\n",num, type->kind);
             ans = ans * getsize(type);
+            //modified->u.array.elem = malloc(sizeof(TypeNode));
             modified->u.array.elem = malloc(sizeof(TypeNode));
             memcpy(modified->u.array.elem, type, sizeof(TypeNode));
             modified->u.array.dimension = num - 1;
@@ -314,7 +322,7 @@ void AnalyzeExtDecList(Type type, TreeNode ExtDecList) { // Analysis ExDef -> Sp
             //printf("ArrayType %d\n", modified->u.array.elem->kind);
             modified->u.array.size = ans;
         }
-        else memcpy(modified->u.array.elem, type, sizeof(TypeNode));;
+        else memcpy(modified, type, sizeof(TypeNode));;
         #ifdef debug_1
             //printf("This is in ExDef -> Specifier ExtDecList SEMI, ExtDecList\n");
             //printf("ID %s, kind: %d\n", id, type->kind);
@@ -367,9 +375,10 @@ void AnalyzeFuncDec(Type type, TreeNode FunDec) { // Analysis ExtDef -> Specifie
                 modified->kind = ARRAY;
                 modified->u.array.size = ans;
             }
-            else modified = VarType;
+            else memcpy(modified, VarType, sizeof(TypeNode));
             newVar->type = modified;
             newVar->tail = NULL;
+            AddSymTable(id, modified, VarList->lineno);
             insertField(&new->VarList, &newVar);
             if (ParamDec->sibling == NULL) break;
             VarList = ParamDec->sibling->sibling;
@@ -390,7 +399,9 @@ void AnalyzeExtDef(TreeNode root) {
     TreeNode Sibling = specifier->sibling; 
     //printf("hello\n");
     if (strcmp(Sibling->name, "ExtDecList")==0) {  // ExDef -> Specifier ExtDecList SEMI
+        //printf("hello\n");
         AnalyzeExtDecList(type, Sibling);
+        //printf("hello\n");
     }
     else if (strcmp(Sibling->name, "FunDec")==0) { // ExtDef -> Specifier FuncDec CompSt
         //printf("hello\n");
@@ -400,7 +411,7 @@ void AnalyzeExtDef(TreeNode root) {
         //printf("hello\n");
     }
     else {
-        AddSymTable(type->StructName, type, specifier->lineno); //  ExtDef -> Specifier Semi
+        //AddSymTable(type->StructName, type, specifier->lineno); //  ExtDef -> Specifier Semi
     }
     #ifdef debug_1
     #endif
@@ -428,6 +439,8 @@ void AnalyzeDef(TreeNode root) { // Def -> Specifier DecList SEMI
         else memcpy(modified, type, sizeof(TypeNode));
         //printf("id %s kind %d\n",id, modified->kind);
         AddSymTable(id, modified, DecList->lineno);
+        Type defType = checkSymTable(id, DecList->lineno);
+        checkIniAssignment(Dec, defType);
         if (Dec->sibling == NULL) break;
         DecList = Dec->sibling->sibling;
     }
