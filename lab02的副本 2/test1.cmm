@@ -1,0 +1,12 @@
+struct a{
+    int i;
+};
+int main() {
+    int i;
+    int i, a1, b1; //multiple definition of i
+    struct a b;
+    float j = 2.3;
+    a1 = 1;
+    b1 = a1 && j;
+    return 0;
+}

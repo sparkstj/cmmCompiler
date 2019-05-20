@@ -1,0 +1,9 @@
+int main() 
+{
+    int i,j;
+    float k,k2;
+    i = 9;
+    k = 2.3;
+    j = 9 + 2.3;
+    return 0;
+}
