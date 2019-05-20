@@ -403,6 +403,11 @@ InterCodes translate_Args(TreeNode Args, ArgList *ArgList){
         //printf("Arg = Exp\n");
         Operand t1 = new_temp();
         InterCodes code1 = translate_Exp(Args->child, t1);
+        if ((code1->data->kind == ASSIGN1)&&(code1->data->u.assign_1.right->kind == VARIABLE)) {
+            TempNo = TempNo - 1;
+            memcpy(t1, code1->data->u.assign_1.right, sizeof(OperandNode));
+            code1 = NULL;
+        }
         //printf("We have code1!\n");
         addArg(ArgList, t1);
         return code1;
@@ -412,6 +417,11 @@ InterCodes translate_Args(TreeNode Args, ArgList *ArgList){
         //printf("Arg = Exp COMMA Args\n");
         Operand t1 = new_temp();
         InterCodes code1 = translate_Exp(Args->child, t1);
+        if ((code1->data->kind == ASSIGN1)&&(code1->data->u.assign_1.right->kind == VARIABLE)) {
+            TempNo = TempNo - 1;
+            memcpy(t1, code1->data->u.assign_1.right, sizeof(OperandNode));
+            code1 = NULL;
+        }
         addArg(ArgList, t1);
         InterCodes code2 = translate_Args(Args->child->sibling->sibling, ArgList);
         addInterCodes(&code1, code2);
@@ -504,6 +514,11 @@ InterCodes translate_Exp(TreeNode Exp, Operand place){
             // MINUS Exp
             Operand t1 = new_temp();
             InterCodes code1 = translate_Exp(temp2, t1);
+            if ((code1->data->kind == ASSIGN1)&&(code1->data->u.assign_1.right->kind == VARIABLE)) {
+                    TempNo = TempNo - 1;
+                    memcpy(t1, code1->data->u.assign_1.right, sizeof(OperandNode));
+                    code1 = NULL;
+            }
             if (place) 
             {InterCodes code2 = malloc(sizeof(InterCodesNode));
             code2->next = NULL; code2->prev = NULL;
@@ -560,6 +575,11 @@ InterCodes translate_Exp(TreeNode Exp, Operand place){
                 //printf("variable addr %d\n",variable);
                 Operand t1 = new_temp();
                 InterCodes code1 = translate_Exp(temp3, t1);
+                if ((code1->data->kind == ASSIGN1)&&(code1->data->u.assign_1.right->kind == VARIABLE)) {
+                    TempNo = TempNo - 1;
+                    memcpy(t1, code1->data->u.assign_1.right, sizeof(OperandNode));
+                    code1 = NULL;
+                }
                 InterCodes code2 = malloc(sizeof(InterCodesNode));
                 code2->next = NULL; code2->prev = NULL;
                 code2->data = malloc(sizeof(InterCodeNode));
@@ -612,12 +632,20 @@ InterCodes translate_Exp(TreeNode Exp, Operand place){
             }
             else if (strcmp(temp2->name, "PLUS") == 0) {
                 Operand t1 = new_temp();
-                Operand t2 = new_temp();
                 InterCodes code1 = translate_Exp(temp1, t1);
-                
+                if ((code1->data->kind == ASSIGN1)&&(code1->data->u.assign_1.right->kind == VARIABLE)) {
+                    TempNo = TempNo - 1;
+                    memcpy(t1, code1->data->u.assign_1.right, sizeof(OperandNode));
+                    code1 = NULL;
+                }
+                Operand t2 = new_temp();
                 InterCodes code2 = translate_Exp(temp3, t2);
+                if ((code2->data->kind == ASSIGN1)&&(code2->data->u.assign_1.right->kind == VARIABLE)) {
+                    TempNo = TempNo - 1;
+                    memcpy(t2, code2->data->u.assign_1.right, sizeof(OperandNode));
+                    code2 = NULL;
+                }
                 addInterCodes(&code1, code2);
-                
                 InterCodes code3 = malloc(sizeof(InterCodesNode));
                 code3->next = NULL; code3->prev = NULL;
                 code3->data = malloc(sizeof(InterCodeNode));
@@ -631,9 +659,20 @@ InterCodes translate_Exp(TreeNode Exp, Operand place){
             }
             else if (strcmp(temp2->name, "MINUS") == 0) {
                 Operand t1 = new_temp();
-                Operand t2 = new_temp();
+                
                 InterCodes code1 = translate_Exp(temp1, t1);
+                if ((code1->data->kind == ASSIGN1)&&(code1->data->u.assign_1.right->kind == VARIABLE)) {
+                    TempNo = TempNo - 1;
+                    memcpy(t1, code1->data->u.assign_1.right, sizeof(OperandNode));
+                    code1 = NULL;
+                }
+                Operand t2 = new_temp();
                 InterCodes code2 = translate_Exp(temp3, t2);
+                if ((code2->data->kind == ASSIGN1)&&(code2->data->u.assign_1.right->kind == VARIABLE)) {
+                    TempNo = TempNo - 1;
+                    memcpy(t2, code2->data->u.assign_1.right, sizeof(OperandNode));
+                    code2 = NULL;
+                }
                 InterCodes code3 = malloc(sizeof(InterCodesNode));
                 code3->next = NULL; code3->prev = NULL;
                 code3->data = malloc(sizeof(InterCodeNode));
@@ -648,10 +687,21 @@ InterCodes translate_Exp(TreeNode Exp, Operand place){
             }
             else if (strcmp(temp2->name, "STAR") == 0) {
                 Operand t1 = new_temp();
-                Operand t2 = new_temp();
+            
                 InterCodes code1 = translate_Exp(temp1, t1);
+                if ((code1->data->kind == ASSIGN1)&&(code1->data->u.assign_1.right->kind == VARIABLE)) {
+                    TempNo = TempNo - 1;
+                    memcpy(t1, code1->data->u.assign_1.right, sizeof(OperandNode));
+                    code1 = NULL;
+                }
+                Operand t2 = new_temp();
                 //printf("we have star code1\n");
                 InterCodes code2 = translate_Exp(temp3, t2);
+                if ((code2->data->kind == ASSIGN1)&&(code2->data->u.assign_1.right->kind == VARIABLE)) {
+                    TempNo = TempNo - 1;
+                    memcpy(t2, code2->data->u.assign_1.right, sizeof(OperandNode));
+                    code2 = NULL;
+                }
                 //printf("we have star code2\n");
                 InterCodes code3 = malloc(sizeof(InterCodesNode));
                 code3->next = NULL; code3->prev = NULL;
@@ -666,10 +716,21 @@ InterCodes translate_Exp(TreeNode Exp, Operand place){
                 return code1;
             }
             else if (strcmp(temp2->name, "DIV") == 0) {
-               Operand t1 = new_temp();
-                Operand t2 = new_temp();
+                Operand t1 = new_temp();
+                
                 InterCodes code1 = translate_Exp(temp1, t1);
+                if ((code1->data->kind == ASSIGN1)&&(code1->data->u.assign_1.right->kind == VARIABLE)) {
+                    TempNo = TempNo - 1;
+                    memcpy(t1, code1->data->u.assign_1.right, sizeof(OperandNode));
+                    code1 = NULL;
+                }
+                Operand t2 = new_temp();
                 InterCodes code2 = translate_Exp(temp3, t2);
+                if ((code2->data->kind == ASSIGN1)&&(code2->data->u.assign_1.right->kind == VARIABLE)) {
+                    TempNo = TempNo - 1;
+                    memcpy(t2, code2->data->u.assign_1.right, sizeof(OperandNode));
+                    code2 = NULL;
+                }
                 InterCodes code3 = malloc(sizeof(InterCodesNode));
                 code3->next = NULL; code3->prev = NULL;
                 code3->data = malloc(sizeof(InterCodeNode));
@@ -784,9 +845,20 @@ InterCodes translate_Cond(TreeNode Exp, Operand label_true, Operand label_false)
         }
         if (strcmp(Operator->name, "RELOP")==0){
             Operand t1 = new_temp();
-            Operand t2 = new_temp();
+            
             InterCodes code1 = translate_Exp(Exp->child, t1);
+            if ((code1->data->kind == ASSIGN1)&&(code1->data->u.assign_1.right->kind == VARIABLE)) {
+                TempNo = TempNo - 1;
+                memcpy(t1, code1->data->u.assign_1.right, sizeof(OperandNode));
+                code1 = NULL;
+            }
+            Operand t2 = new_temp();
             InterCodes code2 = translate_Exp(Operator->sibling, t2);
+            if ((code2->data->kind == ASSIGN1)&&(code2->data->u.assign_1.right->kind == VARIABLE)) {
+                TempNo = TempNo - 1;
+                memcpy(t2, code2->data->u.assign_1.right, sizeof(OperandNode));
+                code2 = NULL;
+            }
             InterCodes code3 = malloc(sizeof(InterCodesNode));
             code3->data = malloc(sizeof(InterCodeNode));
             code3->data->kind = JMP_IF;
@@ -805,6 +877,11 @@ InterCodes translate_Cond(TreeNode Exp, Operand label_true, Operand label_false)
     else {
         Operand t1 = new_temp();
         InterCodes code1 = translate_Exp(Exp, t1);
+        if ((code1->data->kind == ASSIGN1)&&(code1->data->u.assign_1.right->kind == VARIABLE)) {
+                    TempNo = TempNo - 1;
+                    memcpy(t1, code1->data->u.assign_1.right, sizeof(OperandNode));
+                    code1 = NULL;
+        }
         InterCodes code2 = malloc(sizeof(InterCodesNode));
         code2->data = malloc(sizeof(InterCodeNode));
         code2->data->kind = JMP_IF;
@@ -839,6 +916,11 @@ InterCodes translate_Stmt(TreeNode root) {
     if (strcmp(root->child->name, "RETURN")==0) {
         Operand t1 = new_temp();
         InterCodes code1 = translate_Exp(root->child->sibling, t1);
+        if ((code1->data->kind == ASSIGN1)&&(code1->data->u.assign_1.right->kind == VARIABLE)) {
+            TempNo = TempNo - 1;
+            memcpy(t1, code1->data->u.assign_1.right, sizeof(OperandNode));
+            code1 = NULL;
+        }
         //printInterCode(code1);
         //code2 = [RETURN t1]
         printf("We have code1\n");
