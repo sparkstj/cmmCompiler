@@ -128,6 +128,7 @@ struct ArgList_ {
     ArgList next;
 }ArgNode;
 
+void HelperOperand(Operand , char s[]);
 void translate(TreeNode );
 void printInterCode(InterCodes );
 InterCodes translate_Exp(TreeNode , Operand );

@@ -1,0 +1,42 @@
+int exact_divide(int n, int i) {
+    int k = 1;
+    while (k <= n) {
+        if (k * i == n) {
+            return 1;
+        }
+        k = k + 1;
+    }
+    return 0;
+}
+
+int is_prime(int n1) {
+    int i1;
+    if (n1 < 2)  return 0;
+    i1 = 2;
+    while(i1 < n1) {
+        if (exact_divide(n1, i1)) //'%' is not supported
+            return 0;
+        i1 = i1 + 1;
+    }
+    return 1;
+}
+
+int goldbach(int n2) {
+    int i2 = 2;
+    while (i2 < n2) {
+        if (is_prime(i2) && is_prime(n2 - i2))
+            return 1;
+        i2 = i2 + 1;
+    }
+    return 0;
+}
+
+int main(){
+    int n3;
+    n3 = 4;
+    while (n3 <= 30) {
+        write(goldbach(n3));
+        n3 = n3 + 2;
+    }
+    return 0;
+}

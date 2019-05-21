@@ -1,0 +1,77 @@
+int merge(int arr_[7], int low, int mid_, int high) {
+    int j, k;
+    int tmp[10];
+    int left_low = low;
+    int left_high = mid_;
+    int right_low = mid_ + 1;
+    int right_high = high;
+    k = 0;
+    while (left_low <= left_high && right_low <= right_high) {
+        if (arr_[left_low] <= arr_[right_low]) {
+            tmp[k] = arr_[left_low];
+            left_low = left_low + 1;
+        }
+        else {
+            tmp[k] = arr_[right_low];
+            right_low = right_low + 1;
+        }
+        k = k + 1;
+    }
+    if (left_low <= left_high) {
+        j = left_low;
+        while (j <= left_high) {
+            tmp[k] = arr_[j];
+            k = k + 1;
+            j = j + 1;
+        }
+    }
+    if (right_low <= right_high) {
+        j = right_low;
+        while (j <= right_high) {
+            tmp[k] = arr_[j];
+            k = k + 1;
+            j = j + 1;
+        }
+    }
+    j = 0;
+    while (j < high - low + 1) {
+        arr_[low + j] = tmp[j];
+        j = j + 1;
+    }
+    return 0;
+}
+
+int merge_sort(int arr[7], int first, int last) {
+    int mid = 0;
+    if (first < last) {
+        mid = (first + last) / 2;
+        merge_sort(arr, first, mid);
+        merge_sort(arr, mid + 1, last);
+        merge(arr, first, mid, last);
+    }
+    return 0;
+}
+
+int main(){
+    int i;
+    int a[7];
+    a[0] = 32;
+    a[1] = 12;
+    a[2] = 56;
+    a[3] = 78;
+    a[4] = 76;
+    a[5] = 45;
+    a[6] = 36;
+    i = 0;
+    while (i < 7) {
+        write(a[i]);
+        i = i + 1;
+    }
+    merge_sort(a, 0, 6);
+    i = 0;
+    while (i < 7) {
+        write(a[i]);
+        i = i + 1;
+    }
+    return 0;
+}
