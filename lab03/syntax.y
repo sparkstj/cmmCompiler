@@ -99,11 +99,11 @@
 /* High-level Definitions */
 
 Program : ExtDefList { $$ = create_node("Program", @$.first_line, ""); add_child($$,$1); 
-//printTree($$, 0); 
+printTree($$, 0); 
 initialIO();
 SemanticAnalysis($$); 
-//Debugger(); 
-//check($$);
+Debugger(); 
+check($$);
 translate($$);
 printInterCode(CodeHead);
 }

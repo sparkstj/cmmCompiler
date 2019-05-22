@@ -114,7 +114,6 @@ int getsize(Type type) {
                 sum += getsize(structure->type);
                 //printf("Hello\n");
                 structure = structure->tail;
-                if (structure) break;
             }
             break;
     }

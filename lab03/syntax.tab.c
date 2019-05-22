@@ -1524,11 +1524,11 @@ yyreduce:
         case 2:
 #line 101 "syntax.y" /* yacc.c:1667  */
     { (yyval.node) = create_node("Program", (yyloc).first_line, ""); add_child((yyval.node),(yyvsp[0].node)); 
-//printTree($$, 0); 
+printTree((yyval.node), 0); 
 initialIO();
 SemanticAnalysis((yyval.node)); 
-//Debugger(); 
-//check($$);
+Debugger(); 
+check((yyval.node));
 translate((yyval.node));
 printInterCode(CodeHead);
 }

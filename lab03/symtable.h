@@ -66,6 +66,7 @@ struct FieldList_ {
 	FieldList tail;
 }Field;
 
+int getsize(Type );
 void Debugger();
 void SemanticAnalysis(struct TreeNode_ *);
 void error(int, int, char *);
@@ -131,7 +132,7 @@ struct ArgList_ {
 void HelperOperand(Operand , char s[]);
 void translate(TreeNode );
 void printInterCode(InterCodes );
-InterCodes translate_Exp(TreeNode , Operand );
+InterCodes translate_Exp(TreeNode , Operand *);
 InterCodes translate_CompSt(TreeNode );
 InterCodes translate_Args(TreeNode, ArgList *);
 InterCodes translate_FunDec(TreeNode );
