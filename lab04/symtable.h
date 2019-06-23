@@ -16,6 +16,7 @@ typedef struct ArgList_* ArgList;
 typedef struct asmOperand_ * asmOperand;
 typedef struct asmCode_ * asmCode;
 typedef struct stack_ * stack;
+typedef struct var_descriptor_ * vardes;
 
 struct TreeNode_{
 		int lineno;
@@ -36,6 +37,7 @@ struct SymTable_
 	char * name;
 	Type type;
 	Operand variable;
+    int reg_no;
 	SymTable next;
 }SymTableNode;
 
@@ -94,6 +96,7 @@ struct Operand_ {
         char * id; // func // malloc id
         //...
     }u;
+    char * name;
 }OperandNode;
 
 struct InterCode_{
@@ -124,6 +127,7 @@ struct InterCodes_ {
     InterCode data; // malloc
     InterCodes prev;
     InterCodes next;
+    int layer;
 }InterCodesNode;
 
 struct ArgList_ {
@@ -147,14 +151,16 @@ int TempNo;
 int VariaNo;
 int LabelNo;
 
+void improveInterCodes(InterCodes );
+
 /* ----------------------------- Translate to ASM --------------------------- */
 
 struct asmOperand_ {
     enum{ immediate, reg, str, addr} type;
     int value;
     int no;
-    asmOperand address;
     int offset;
+    asmOperand address;
     char* name;
 }asmOperandNode;
  
@@ -170,15 +176,30 @@ struct asmCode_ {
     asmCode prev;
 }asmCodeNode;
 
+struct reg {
+    Operand var;
+    int next;
+}regsNode;
+
+struct var_descriptor_ {
+    Operand var;
+    int inreg, instack;
+    int regNo, offset;
+    vardes next, prev;
+}varNode;
+
 struct stack_ {
-    asmOperand data;
+    Operand data;
     stack next;
     stack prev;
+    int offset; // from fp before mul 4
 }stackNode;
 
 stack asmstackTop;
+vardes VarHead;
 asmCode textTop; // the first node of asm .text code;
 void test();
-
+void ASM(InterCodes ); 
+void HelperAsm(asmOperand , char result[]);
 
 #endif

@@ -6,175 +6,174 @@ void starter (FILE * out) {
     fprintf(out, ".data\n");
     fprintf(out, "_prompt: .asciiz \"Enter an Integer\"\n");
     fprintf(out, "_ret: .asciiz \"\\n\"\n");
-    fprintf(out, ".global main\n");
+    fprintf(out, ".globl main\n");
     fprintf(out, ".text\n");
+    fprintf(out, "read:\n");
+    fprintf(out, "li $v0, 4\nla $a0, _prompt\n");
+    fprintf(out, "syscall\n");
+    fprintf(out, "li $v0, 5\nsyscall\njr $ra\n");
+    fprintf(out, "write:\n");
+    fprintf(out, "li $v0, 1\nsyscall\nli $v0, 4\nla $a0, _ret\nsyscall\nmove $v0, $0\njr $ra\n");
     return ;
 }
-void OutputasmCode (FILE * out) {
-	InterCodes root = CodeHead;
-	//printf("hello\n");
-	while (root) {
-		//printf("in root\n");
-        // LABEL, FUNC, ASSIGN1, ASSIGN2, JMP_GOTO, JMP_IF, STMT_RETURN, DEC, ARG, CALL, PARAM, READ, WRITE
-        switch (root->data->kind)
-        {
-            case 0:  
-            {
-                char s[MAXN];
-                HelperOperand(root->data->u.label.x, s);
-                fprintf(out, "LABEL %s :\n", s);
+
+void OutputasmCode(FILE * out){
+    asmCode root = textTop;
+    while (root) {
+        switch(root->type){
+            case asmLabel: {
+                char opstr[64];
+                HelperAsm(root->u.one.op1, opstr);
+                fprintf(out, "%s:\n", opstr);
+                break;
             }
+            case asmLi: {
+                char opstr1[64], opstr2[64];
+                HelperAsm(root->u.two.op1, opstr1);
+                HelperAsm(root->u.two.op2, opstr2);
+                fprintf(out, "li %s, %s\n", opstr1, opstr2);
                 break;
-            case 1:
-            {
-                char s[MAXN];
-                HelperOperand(root->data->u.func.f, s);
-                fprintf(out, "FUNCTION %s :\n", s);
             }
+            case asmMove:{
+                char opstr1[64], opstr2[64];
+                HelperAsm(root->u.two.op1, opstr1);
+                HelperAsm(root->u.two.op2, opstr2);
+                fprintf(out, "move %s, %s\n", opstr1, opstr2);
                 break;
-            case 2:
-            {
-                char left[MAXN];
-                HelperOperand(root->data->u.assign_1.left, left);
-                char right[MAXN];
-                HelperOperand(root->data->u.assign_1.right, right);
-                
-                switch (root->data->Operator) {
-                    case 0:
-                        fprintf(out, "%s := %s\n", left, right);
-                        break;
-                    case 5:
-                        fprintf(out, "%s := &%s\n", left, right);
-                        break;
-                    case 6:
-                        fprintf(out, "*%s := %s\n", left, right);
-                        break;
-                    case 7:
-                        fprintf(out, "%s := *%s\n", left, right);
-                        break;
-                    default:
-                        break;
-                }
             }
-                break;
-            case 3:
+            case asmAddi:
             {
-                char left[MAXN], right1[MAXN], right2[MAXN];
-                HelperOperand(root->data->u.assign_2.left, left);
-                HelperOperand(root->data->u.assign_2.right1, right1);
-                HelperOperand(root->data->u.assign_2.right2, right2);
-                switch (root->data->Operator)
-                {
-                    case 1:
-                        fprintf(out, "%s := %s + %s\n", left, right1, right2);
-                        break;
-                    case 2:
-                        fprintf(out, "%s := %s - %s\n", left, right1, right2);
-                        break;
-                    case 3:
-                        fprintf(out, "%s := %s * %s\n", left, right1, right2);
-                        break;    
-                    case 4:
-                        fprintf(out, "%s := %s / %s\n", left, right1, right2);
-                        break;
-                    default:
-                        break;
-                }
+                char opstr1[64], opstr2[64], opstr3[64];
+                HelperAsm(root->u.three.op1, opstr1);
+                HelperAsm(root->u.three.op2, opstr2);
+                HelperAsm(root->u.three.op3, opstr3);
+                fprintf(out, "addi %s, %s, %s\n", opstr1, opstr2, opstr3);
+                break;
             }
+            case asmAdd: {
+                char opstr1[64], opstr2[64], opstr3[64];
+                HelperAsm(root->u.three.op1, opstr1);
+                HelperAsm(root->u.three.op2, opstr2);
+                HelperAsm(root->u.three.op3, opstr3);
+                fprintf(out, "add %s, %s, %s\n", opstr1, opstr2, opstr3);
                 break;
-            case 4:
-            {
-                char s[MAXN];
-                HelperOperand(root->data->u.jmp_goto.x, s);
-                fprintf(out, "GOTO %s\n",s);
             }
+            case asmSub: {
+                char opstr1[64], opstr2[64], opstr3[64];
+                HelperAsm(root->u.three.op1, opstr1);
+                HelperAsm(root->u.three.op2, opstr2);
+                HelperAsm(root->u.three.op3, opstr3);
+                fprintf(out, "sub %s, %s, %s\n", opstr1, opstr2, opstr3);
                 break;
-            case 5:
-            {
-                char x[MAXN], y[MAXN], z[MAXN];
-                HelperOperand(root->data->u.jmp_if.op1, x);
-                HelperOperand(root->data->u.jmp_if.op2, y);
-                HelperOperand(root->data->u.jmp_if.z, z);
-                switch(root->data->relop){
-                    case 0:
-                        fprintf(out, "IF %s >= %s GOTO %s\n",x,y,z);
-                        break;
-                    case 1:
-                        fprintf(out, "IF %s <= %s GOTO %s\n",x,y,z);
-                        break;
-                    case 2:
-                        fprintf(out, "IF %s > %s GOTO %s\n",x,y,z);
-                        break;
-                    case 3:
-                        fprintf(out, "IF %s < %s GOTO %s\n",x,y,z);
-                        break;
-                    case 4:
-                        fprintf(out, "IF %s == %s GOTO %s\n",x,y,z);
-                        break;
-                    case 5:
-                        fprintf(out, "IF %s != %s GOTO %s\n",x,y,z);
-                        break;
-                }
             }
+            case asmMul: {
+                char opstr1[64], opstr2[64], opstr3[64];
+                HelperAsm(root->u.three.op1, opstr1);
+                HelperAsm(root->u.three.op2, opstr2);
+                HelperAsm(root->u.three.op3, opstr3);
+                fprintf(out, "mul %s, %s, %s\n", opstr1, opstr2, opstr3);
                 break;
-            case 6:
-            {
-                char s[MAXN];
-                HelperOperand(root->data->u.stmt_return.x, s);
-                fprintf(out, "RETURN %s\n", s);
             }
+            case asmDiv: {
+                char opstr1[64], opstr2[64], opstr3[64];
+                HelperAsm(root->u.three.op1, opstr1);
+                HelperAsm(root->u.three.op2, opstr2);
+                HelperAsm(root->u.three.op3, opstr3);
+                fprintf(out, "div %s, %s, %s\n", opstr1, opstr2, opstr3);
                 break;
-            case 7:
-            {
-                char x[MAXN];
-                HelperOperand(root->data->u.dec.x,x);
-                fprintf(out, "DEC %s %d\n", x, root->data->u.dec.size);
             }
+            case asmLw: {
+                char opstr1[64], opstr2[64];
+                HelperAsm(root->u.two.op1, opstr1);
+                HelperAsm(root->u.two.op2, opstr2);
+                fprintf(out, "lw %s, %s\n", opstr1, opstr2);
                 break;
-            case 8:
-            {
-                char x[MAXN];
-                HelperOperand(root->data->u.arg.x, x);
-                fprintf(out, "ARG %s\n", x);
             }
+            case asmSw: {
+                char opstr1[64], opstr2[64];
+                HelperAsm(root->u.two.op1, opstr1);
+                HelperAsm(root->u.two.op2, opstr2);
+                fprintf(out, "sw %s, %s\n", opstr1, opstr2);
                 break;
-            case 9:
-            {
-                char x[MAXN], f[MAXN];
-                HelperOperand(root->data->u.call.x, x);
-                HelperOperand(root->data->u.call.f, f);
-                fprintf(out, "%s := CALL %s\n", x, f);
             }
+            case asmJ: {
+                char opstr[64];
+                HelperAsm(root->u.one.op1, opstr);
+                fprintf(out, "j %s\n", opstr);
                 break;
-            case 10:
-            {
-                char x[MAXN];
-                HelperOperand(root->data->u.param.x, x);
-                fprintf(out, "PARAM %s\n", x);
             }
+            case asmJal: {
+                char opstr[64];
+                HelperAsm(root->u.one.op1, opstr);
+                fprintf(out, "jal %s\n", opstr);
                 break;
-            case 11:
-            {
-                char x[MAXN];
-                HelperOperand(root->data->u.read.x, x);
-                fprintf(out, "READ %s\n", x);
             }
+            case asmJr: {
+                char opstr[64];
+                HelperAsm(root->u.one.op1, opstr);
+                fprintf(out, "jr %s\n", opstr);
                 break;
-            case 12:
-            {
-                char x[MAXN];
-                HelperOperand(root->data->u.write.x, x);
-                fprintf(out, "WRITE %s\n", x);
             }
+            case asmBeq: {
+                char opstr1[64], opstr2[64], opstr3[64];
+                HelperAsm(root->u.three.op1, opstr1);
+                HelperAsm(root->u.three.op2, opstr2);
+                HelperAsm(root->u.three.op3, opstr3);
+                fprintf(out, "beq %s, %s, %s\n", opstr1, opstr2, opstr3);
                 break;
-            default:
+            }
+            case asmBne: {
+                char opstr1[64], opstr2[64], opstr3[64];
+                HelperAsm(root->u.three.op1, opstr1);
+                HelperAsm(root->u.three.op2, opstr2);
+                HelperAsm(root->u.three.op3, opstr3);
+                fprintf(out, "bne %s, %s, %s\n", opstr1, opstr2, opstr3);
                 break;
+            }
+            case asmBgt: {
+                char opstr1[64], opstr2[64], opstr3[64];
+                HelperAsm(root->u.three.op1, opstr1);
+                HelperAsm(root->u.three.op2, opstr2);
+                HelperAsm(root->u.three.op3, opstr3);
+                fprintf(out, "bgt %s, %s, %s\n", opstr1, opstr2, opstr3);
+                break;
+            }
+            case asmBlt: {
+                char opstr1[64], opstr2[64], opstr3[64];
+                HelperAsm(root->u.three.op1, opstr1);
+                HelperAsm(root->u.three.op2, opstr2);
+                HelperAsm(root->u.three.op3, opstr3);
+                fprintf(out, "blt %s, %s, %s\n", opstr1, opstr2, opstr3);
+                break;
+            }
+            case asmBge: {
+                char opstr1[64], opstr2[64], opstr3[64];
+                HelperAsm(root->u.three.op1, opstr1);
+                HelperAsm(root->u.three.op2, opstr2);
+                HelperAsm(root->u.three.op3, opstr3);
+                fprintf(out, "bge %s, %s, %s\n", opstr1, opstr2, opstr3);
+                break;
+            }
+            case asmBle: {
+                char opstr1[64], opstr2[64], opstr3[64];
+                HelperAsm(root->u.three.op1, opstr1);
+                HelperAsm(root->u.three.op2, opstr2);
+                HelperAsm(root->u.three.op3, opstr3);
+                fprintf(out, "ble %s, %s, %s\n", opstr1, opstr2, opstr3);
+                break;
+            }
+            case asmLa: {
+                char opstr1[64], opstr2[64];
+                HelperAsm(root->u.two.op1, opstr1);
+                HelperAsm(root->u.two.op2, opstr2);
+                fprintf(out, "la %s, %s\n", opstr1, opstr2);
+                break;
+            }
         }
         root = root->next;
     }
     return ;
 }
-
 int main(int argc, char** argv) {
 	if (argc <= 1) return 1;
 	FILE * f = fopen(argv[1], "r");
@@ -191,7 +190,7 @@ int main(int argc, char** argv) {
 		return 1;
 	}
     starter(out);
-	//OutputasmCode(out);
+	OutputasmCode(out);
 	fclose(out);
 	return 0;
 }

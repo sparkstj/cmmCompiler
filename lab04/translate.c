@@ -1107,12 +1107,19 @@ InterCodes translate_CompSt(TreeNode root){
     while (DefList) {
         if (strcmp(DefList->name, "empty")==0) break;
         Def = DefList->child;
-        if (Def->child->sibling->child->child->sibling) {
-            // definition assignop
-            Operand variable = lookup(Def->child->sibling->child->child->child->name);
-            InterCodes assign = translate_Exp(Def->child->sibling->child->child->sibling->sibling, variable);
-            addInterCodes(&result, assign);
-        }
+        TreeNode Dec = Def->child->sibling->child;
+        while (1){
+            if (Dec->child->sibling) {
+                // definition assignop
+                Operand variable = lookup(Dec->child->child->name);
+                InterCodes assign = translate_Exp(Dec->child->sibling->sibling, variable);
+                addInterCodes(&result, assign);
+            }
+            if (Dec->sibling){
+                Dec = Dec->sibling->sibling->child;
+            }
+            else break;
+        } 
         DefList = Def->sibling;
     }
     TreeNode StmtList = root->child->sibling->sibling;
@@ -1158,6 +1165,25 @@ void translate(TreeNode root){
             translate(temp);
             temp = temp->sibling;
         }
+    }
+    return ;
+}
+
+void improveInterCodes(InterCodes Head){
+    InterCodes temp = Head;
+    InterCodes last = Head;
+    while (temp->next!=NULL){
+        temp = temp->next;
+        if ((last->data->kind == ASSIGN2)&&(temp->data->kind == ASSIGN1)){
+            if ((last->data->u.assign_2.left->kind == temp->data->u.assign_1.right->kind)&&(last->data->u.assign_2.left->u.var_no == temp->data->u.assign_1.right->u.var_no)){ 
+                memcpy(last->data->u.assign_2.left, temp->data->u.assign_1.left, sizeof(OperandNode));
+                last->next = temp->next;
+                temp->next->prev = last;
+                temp = last;
+                last = last->prev;
+                }
+        }
+        last = temp;
     }
     return ;
 }

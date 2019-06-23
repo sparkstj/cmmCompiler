@@ -100,14 +100,16 @@
 /* High-level Definitions */
 
 Program : ExtDefList { $$ = create_node("Program", @$.first_line, ""); add_child($$,$1); 
-printTree($$, 0); 
+//printTree($$, 0); 
 initialIO();
-//SemanticAnalysis($$); 
+SemanticAnalysis($$); 
 //Debugger(); 
-//check($$);
-//translate($$);
-//printInterCode(CodeHead);
-test();
+check($$);
+translate($$);
+improveInterCodes(CodeHead);
+printInterCode(CodeHead);
+ASM(CodeHead);
+//test();
 }
 	;
 
