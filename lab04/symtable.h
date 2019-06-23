@@ -186,6 +186,7 @@ struct var_descriptor_ {
     int inreg, instack;
     int regNo, offset;
     vardes next, prev;
+    int isa;
 }varNode;
 
 struct stack_ {

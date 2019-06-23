@@ -1,10 +1,14 @@
+int fact(int a1, int a2, int a3, int a4, int a5)
+{
+    int a6;
+    a6 = a1 + a2 + a3 + a5;
+    return a6;
+}
+
 int main()
 {
-    int a = 1;
-    int i = 0;
-    while (i < 8){
-        a = a + 3;
-        i = i + 1;
-    }
+    int aa1 = 0, aa2 = 1, aa3 = 2, aa4= 3, aa5= 4;
+    int a = fact(aa1, aa2, aa3, aa4, aa5);
+    write(a);
     return 0;
 }

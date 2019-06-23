@@ -2,6 +2,7 @@
 #include <string.h> // handle the def warning of memcpy
 #include <stdlib.h> // handle the def warning of malloc
 #include "symtable.h"
+#define frameSize 40
 
 int basicBlock[64];
 int basicFlag = 1;
@@ -33,7 +34,7 @@ void HelperAsm(asmOperand op, char result[64]){
             else if (op->no <= 27) sprintf(result, "$k%d", op->no-26);
             else if (op->no == 28) sprintf(result, "$gp");
             else if (op->no == 29) sprintf(result, "$sp");
-            else if (op->no == 30) sprintf(result, "$fp");
+            else if (op->no == 30) sprintf(result, "$s8");
             else if (op->no == 31) sprintf(result, "$ra");
             break;
             }
@@ -499,7 +500,7 @@ void spill(Operand x, int regNum){
     code->u.two.op2->address->no = 29;
     code->u.two.op2->offset = 0;
     addAsmCode(code);
-    printRegsVars();
+    //printRegsVars();
     return ;
 }
 
@@ -677,6 +678,7 @@ void translateAsm(InterCodes root) {
                 break;
             case FUNC:
             {
+                offs[currentOff] = 4;
                 asmCode code1 = malloc(sizeof(asmCodeNode));
                 code1->type = asmLabel;
                 code1->u.one.op1 = malloc(sizeof(asmCodeNode));
@@ -684,7 +686,8 @@ void translateAsm(InterCodes root) {
                 code1->u.one.op1->name = root->data->u.func.f->u.id;
                 code1->next = code1->prev = NULL;
                 addAsmCode(code1);
-                asmCode code2 = malloc(sizeof(asmCodeNode));
+                if (strcmp(root->data->u.func.f->u.id, "main")==0)
+                {asmCode code2 = malloc(sizeof(asmCodeNode));
                 code2->type = asmMove;
                 code2->next = code2->prev = NULL;
                 code2->u.two.op1 = malloc(sizeof(asmCodeNode));
@@ -693,10 +696,145 @@ void translateAsm(InterCodes root) {
                 code2->u.two.op2 = malloc(sizeof(asmCodeNode));
                 code2->u.two.op2->type = reg;
                 code2->u.two.op2->no = 29;
-                addAsmCode(code2);
+                addAsmCode(code2);}
+                else{
+                    
+                    asmCode code3 = malloc(sizeof(asmCodeNode));
+                    code3->next = code3->prev = NULL;
+                    code3->type = asmAddi;
+                    code3->u.three.op1 = malloc(sizeof(asmOperandNode));
+                    code3->u.three.op1->type = reg;
+                    code3->u.three.op1->no = 29;
+                    code3->u.three.op2 = malloc(sizeof(asmOperandNode));
+                    code3->u.three.op2->type = reg;
+                    code3->u.three.op2->no = 29;
+                    code3->u.three.op3 = malloc(sizeof(asmOperandNode));
+                    code3->u.three.op3->type = immediate;
+                    code3->u.three.op3->value = -frameSize;
+                    addAsmCode(code3);
+                    asmCode code4 = malloc(sizeof(asmCodeNode));
+                    code4->next = code4->prev = NULL;
+                    code4->type = asmSw;
+                    code4->u.two.op1 = malloc(sizeof(asmOperandNode));
+                    code4->u.two.op1->type = reg;
+                    code4->u.two.op1->no = 31;
+                    code4->u.two.op2 = malloc(sizeof(asmOperandNode));
+                    code4->u.two.op2->type = addr;
+                    code4->u.two.op2->offset = frameSize-4;
+                    code4->u.two.op2->address = malloc(sizeof(asmOperandNode));
+                    code4->u.two.op2->address->type = reg;
+                    code4->u.two.op2->address->no = 29;
+                    addAsmCode(code4);
+                    asmCode code5 = malloc(sizeof(asmCodeNode));
+                    code5->next = code5->prev = NULL;
+                    code5->type = asmSw;
+                    code5->u.two.op1 = malloc(sizeof(asmOperandNode));
+                    code5->u.two.op1->type = reg;
+                    code5->u.two.op1->no = 30;
+                    code5->u.two.op2 = malloc(sizeof(asmOperandNode));
+                    code5->u.two.op2->type = addr;
+                    code5->u.two.op2->offset = frameSize-8;
+                    code5->u.two.op2->address = malloc(sizeof(asmOperandNode));
+                    code5->u.two.op2->address->type = reg;
+                    code5->u.two.op2->address->no = 29;
+                    addAsmCode(code5);
+                    asmCode code6 = malloc(sizeof(asmCodeNode));
+                    code6->next = code6->prev = NULL;
+                    code6->type = asmAddi;
+                    code6->u.three.op1 = malloc(sizeof(asmOperandNode));
+                    code6->u.three.op1->type = reg;
+                    code6->u.three.op1->no = 30;
+                    code6->u.three.op2 = malloc(sizeof(asmOperandNode));
+                    code6->u.three.op2->type = reg;
+                    code6->u.three.op2->no = 29;
+                    code6->u.three.op3 = malloc(sizeof(asmOperandNode));
+                    code6->u.three.op3->type = immediate;
+                    code6->u.three.op3->value = frameSize;
+                    addAsmCode(code6);
+                    offs[currentOff] += 8;
+                    for (int i = 16; i < 24; i++)
+                        if (1){
+                            asmCode code7 = malloc(sizeof(asmCodeNode));
+                            code7->next = code7->prev = NULL;
+                            code7->type = asmSw;
+                            code7->u.two.op1 = malloc(sizeof(asmOperandNode));
+                            code7->u.two.op1->type = reg;
+                            code7->u.two.op1->no = i;
+                            code7->u.two.op2 = malloc(sizeof(asmOperandNode));
+                            code7->u.two.op2->type = addr;
+                            code7->u.two.op2->offset = -offs[currentOff];
+                            offs[currentOff] += 4;
+                            code7->u.two.op2->address = malloc(sizeof(asmOperandNode));
+                            code7->u.two.op2->address->type = reg;
+                            code7->u.two.op2->address->no = 30;
+                            addAsmCode(code7);
+                            if (regs[i].var) {
+                                Operand x = regs[i].var;
+                                VarList[x->kind*TempNo+x->u.var_no-1].instack = 1;
+                                VarList[x->kind*TempNo+x->u.var_no-1].offset = -offs[currentOff];
+                                VarList[x->kind*TempNo+x->u.var_no-1].inreg = 0;
+                                VarList[x->kind*TempNo+x->u.var_no-1].regNo = -1;
+                            }
+                            regs[i].var = NULL;
+                            regs[i].next = -1;
+                        }
+                    FuncTable temp = FuncHead;
+                    while (strcmp(temp->name, root->data->u.func.f->u.id)!=0) temp = temp->next;
+                    if (!temp) printf("Fuck No func found in FUnctable you twat\n");
+                    FieldList ArgTemp = temp->VarList; int ArgNum = 0;
+                    while (ArgTemp) {ArgNum++; ArgTemp = ArgTemp->tail;}
+                    InterCodes ParamTemp = root->next;
+                    //printf("argnum in func: %d\n", ArgNum);
+                    if (ArgNum > 4)
+                    {
+                        for (int i = ArgNum-5; i >=0 ;i--)
+                        {
+                            asmCode code1 = malloc(sizeof(asmCodeNode));
+                            code1->next = code1->prev = NULL;
+                            code1->type = asmLw;
+                            code1->u.two.op1 = malloc(sizeof(asmOperandNode));
+                            code1->u.two.op1->type = reg;
+                            code1->u.two.op1->no = getReg(ParamTemp->data->u.param.x, 0, root);
+                            code1->u.two.op2 = malloc(sizeof(asmOperandNode));
+                            code1->u.two.op2->type = addr;
+                            code1->u.two.op2->offset = frameSize+4+i*4;
+                            code1->u.two.op2->address = malloc(sizeof(asmOperandNode));
+                            code1->u.two.op2->address->type = reg;
+                            code1->u.two.op2->address->no = 29;
+                            ParamTemp = ParamTemp->next;
+                            addAsmCode(code1);
+                        }
+                    
+                        for (int i = 7; i >=4; i--)
+                        {
+                            Operand x = ParamTemp->data->u.param.x;
+                            VarList[x->kind*TempNo+x->u.var_no-1].inreg = 1;
+                            VarList[x->kind*TempNo+x->u.var_no-1].regNo = i;
+                            ParamTemp = ParamTemp->next;
+                        }
+                    }
+                    else {
+                       
+                        while (ParamTemp->data->kind == PARAM){
+                            Operand x = ParamTemp->data->u.param.x;
+                            VarList[x->kind*TempNo+x->u.var_no-1].inreg = 1;
+                            VarList[x->kind*TempNo+x->u.var_no-1].regNo = ArgNum+3;
+                            ArgNum--;
+                            ParamTemp = ParamTemp->next;
+                        }
+                    }
+
+                    //printRegsVars();
+                    
+                }
 
             }
                 break;
+            case PARAM:
+            {
+               
+            }
+            break;
             case ASSIGN1:
             {        
                 switch (root->data->Operator) {
@@ -845,7 +983,8 @@ void translateAsm(InterCodes root) {
                         code1->u.three.op3 = malloc(sizeof(asmOperandNode));
                         code1->u.three.op3->type = reg;
                         code1->u.three.op3->no = getReg(root->data->u.assign_2.right2,0,root);
-                        code1->next = code1->prev = NULL;}
+                        code1->next = code1->prev = NULL;
+                        addAsmCode(code1);}
                         break;    
                     case DIV_OP:
                         {asmCode code1 = malloc(sizeof(asmCodeNode));
@@ -859,7 +998,8 @@ void translateAsm(InterCodes root) {
                         code1->u.three.op3 = malloc(sizeof(asmOperandNode));
                         code1->u.three.op3->type = reg;
                         code1->u.three.op3->no = getReg(root->data->u.assign_2.right2,0,root);
-                        code1->next = code1->prev = NULL;}
+                        code1->next = code1->prev = NULL;
+                        addAsmCode(code1);}
                         break;
                     default:
                         break;
@@ -1004,6 +1144,47 @@ void translateAsm(InterCodes root) {
                 break;
             case STMT_RETURN:
             {
+                if (root->next)
+                {
+                asmCode code4 = malloc(sizeof(asmCodeNode));
+                code4->next = code4->prev = NULL;
+                code4->type = asmLw;
+                code4->u.two.op1 = malloc(sizeof(asmOperandNode));
+                code4->u.two.op1->type = reg;
+                code4->u.two.op1->no = 31;
+                code4->u.two.op2 = malloc(sizeof(asmOperandNode));
+                code4->u.two.op2->type = addr;
+                code4->u.two.op2->offset = -4;
+                code4->u.two.op2->address = malloc(sizeof(asmOperandNode));
+                code4->u.two.op2->address->type = reg;
+                code4->u.two.op2->address->no = 30;
+                addAsmCode(code4);
+                asmCode code3 = malloc(sizeof(asmCodeNode));
+                code3->next = code3->prev = NULL;
+                code3->type = asmAddi;
+                code3->u.three.op1 = malloc(sizeof(asmOperandNode));
+                code3->u.three.op1->type = reg;
+                code3->u.three.op1->no = 29;
+                code3->u.three.op2 = malloc(sizeof(asmOperandNode));
+                code3->u.three.op2->type = reg;
+                code3->u.three.op2->no = 30;
+                code3->u.three.op3 = malloc(sizeof(asmOperandNode));
+                code3->u.three.op3->type = immediate;
+                code3->u.three.op3->value = 0;
+                addAsmCode(code3);
+                asmCode code5 = malloc(sizeof(asmCodeNode));
+                code5->next = code5->prev = NULL;
+                code5->type = asmLw;
+                code5->u.two.op1 = malloc(sizeof(asmOperandNode));
+                code5->u.two.op1->type = reg;
+                code5->u.two.op1->no = 30;
+                code5->u.two.op2 = malloc(sizeof(asmOperandNode));
+                code5->u.two.op2->type = addr;
+                code5->u.two.op2->offset = -8;
+                code5->u.two.op2->address = malloc(sizeof(asmOperandNode));
+                code5->u.two.op2->address->type = reg;
+                code5->u.two.op2->address->no = 29;
+                addAsmCode(code5);}
                 asmCode code1 = malloc(sizeof(asmCodeNode));
                 code1->type = asmMove;
                 code1->u.two.op1 = malloc(sizeof(asmOperandNode));
@@ -1024,38 +1205,229 @@ void translateAsm(InterCodes root) {
             }
                 break;
             case ARG:
+            {
+            }
                 break;
             case CALL:
             {
-                if (1) {
-                    for (int i = 8; i < 26; i++){
+                for (int i = 4; i < 8; i++) {
+                    if (regs[i].var == NULL) break;
+                    subsp4();
+                    asmCode code6 = malloc(sizeof(asmCodeNode));
+                    code6->prev = code6->next = NULL;
+                    code6->type = asmSw;
+                    code6->u.two.op1 = malloc(sizeof(asmOperandNode));
+                    code6->u.two.op1->type = reg;
+                    code6->u.two.op1->no = i;
+                    code6->u.two.op2 = malloc(sizeof(asmOperandNode));
+                    code6->u.two.op2->type = addr;
+                    code6->u.two.op2->offset = 0;
+                    code6->u.two.op2->address = malloc(sizeof(asmOperandNode));
+                    code6->u.two.op2->address->type = reg;
+                    code6->u.two.op2->address->no = 29;
+                    addAsmCode(code6);
+                    Operand x = regs[i].var;
+                    VarList[x->kind*TempNo+x->u.var_no-1].instack = 1;
+                    VarList[x->kind*TempNo+x->u.var_no-1].offset = 4-offs[currentOff];
+                    VarList[x->kind*TempNo+x->u.var_no-1].inreg = 0;
+                    VarList[x->kind*TempNo+x->u.var_no-1].regNo = -1;
+                    VarList[x->kind*TempNo+x->u.var_no-1].isa = i;
+                    asmCode code8 = malloc(sizeof(asmCodeNode));
+                    code8->prev = code8->next = NULL;
+                    code8->type = asmLw;
+                    code8->u.two.op1 = malloc(sizeof(asmOperandNode));
+                    code8->u.two.op1->type = reg;
+                    code8->u.two.op1->no = 24;
+                    code8->u.two.op2 = malloc(sizeof(asmOperandNode));
+                    code8->u.two.op2->type = addr;
+                    code8->u.two.op2->offset = VarList[x->kind*TempNo+x->u.var_no-1].offset;
+                    code8->u.two.op2->address = malloc(sizeof(asmOperandNode));                        code8->u.two.op2->address->type = reg;
+                    code8->u.two.op2->address->no = 30;
+                    addAsmCode(code8);
+                }
+                InterCodes temp = root->prev;
+                int argNum = 0;
+                while (temp->data->kind == ARG) {
+                    argNum ++;
+                    temp = temp->prev;
+                }
+                int argspace = (0 < 4*(argNum-5))? 4*(argNum-5):0;
+                if (argspace != 0)
+                {asmCode code1 = malloc(sizeof(asmCodeNode));
+                code1->next = code1->prev = NULL;
+                code1->type = asmAddi;
+                code1->u.three.op1 = malloc(sizeof(asmOperandNode));
+                code1->u.three.op1->type = reg;
+                code1->u.three.op1->no = 29;
+                code1->u.three.op2 = malloc(sizeof(asmOperandNode));
+                code1->u.three.op2->type = reg;
+                code1->u.three.op2->no = 29;
+                code1->u.three.op3 = malloc(sizeof(asmOperandNode));
+                code1->u.three.op3->type = immediate;
+                code1->u.three.op3->value = -argspace;
+                offs[currentOff] += argspace;
+                addAsmCode(code1);}
+                temp = temp->next;
+                //printf("argNum %d\n",argNum);
+                if (argNum <= 4) {
+                    int regCount = 4;
+                    while (temp != root){
+                        asmCode code = malloc(sizeof(asmCodeNode));
+                        code->next = code->prev = NULL;
+                        code->type = asmMove;
+                        code->u.two.op1 = malloc(sizeof(asmOperandNode));
+                        code->u.two.op1->type = reg;
+                        code->u.two.op1->no = regCount;
+                        regCount++;
+                        code->u.two.op2 = malloc(sizeof(asmOperandNode));
+                        code->u.two.op2->type = reg;
+                        code->u.two.op2->no = getReg(temp->data->u.arg.x, 0, root);
+                        addAsmCode(code);
+                        regs[code->u.two.op2->no].var = NULL;
+                        regs[code->u.two.op2->no].next = -1;
+                        VarList[temp->data->u.arg.x->kind*TempNo+temp->data->u.arg.x->u.var_no-1].inreg = 1;
+                        VarList[temp->data->u.arg.x->kind*TempNo+temp->data->u.arg.x->u.var_no-1].regNo = regCount;
+                        temp = temp->next;
+                    }
+                    if (1) {
+                    for (int i = 8; i < 15; i++){
                         if (regs[i].var != NULL) {
                             spill(regs[i].var, i);
                             regs[i].var = NULL;
                             regs[i].next = -1;
                         }
                     }
+                    for (int i = 24; i < 26; i++){
+                        if (regs[i].var != NULL) {
+                            spill(regs[i].var, i);
+                            regs[i].var = NULL;
+                            regs[i].next = -1;
+                        }
+                    }
+                    }
                 }
+                else {
+                    for (int i = 4; i < 8; i++) {
+                        asmCode code = malloc(sizeof(asmCodeNode));
+                        code->next = code->prev = NULL;
+                        code->type = asmMove;
+                        code->u.two.op1 = malloc(sizeof(asmOperandNode));
+                        code->u.two.op1->type = reg;
+                        code->u.two.op1->no = i;
+                        code->u.two.op2 = malloc(sizeof(asmOperandNode));
+                        code->u.two.op2->type = reg;
+                        code->u.two.op2->no = getReg(temp->data->u.arg.x, 0, root);
+                        addAsmCode(code);
+                        regs[code->u.two.op2->no].var = NULL;
+                        regs[code->u.two.op2->no].next = -1;
+                        VarList[temp->data->u.arg.x->kind*TempNo+temp->data->u.arg.x->u.var_no-1].inreg = 1;
+                        VarList[temp->data->u.arg.x->kind*TempNo+temp->data->u.arg.x->u.var_no-1].regNo = i;
+                        temp = temp->next;
+                    }
+                    if (1) {
+                    for (int i = 8; i < 15; i++){
+                        if (regs[i].var != NULL) {
+                            spill(regs[i].var, i);
+                            regs[i].var = NULL;
+                            regs[i].next = -1;
+                        }
+                    }
+                    for (int i = 24; i < 26; i++){
+                        if (regs[i].var != NULL) {
+                            spill(regs[i].var, i);
+                            regs[i].var = NULL;
+                            regs[i].next = -1;
+                        }
+                    }
+                    }
+                    int argoffset = 0;
+                    while (temp != root){
+                        asmCode code3 = malloc(sizeof(asmCodeNode));
+                        code3->next = code3->prev = NULL;
+                        code3->type = asmSw;
+                        code3->u.two.op1 = malloc(sizeof(asmOperandNode));
+                        code3->u.two.op1->type = reg;
+                        code3->u.two.op1->no = getReg(temp->data->u.arg.x, 0, root);
+                        code3->u.two.op2 = malloc(sizeof(asmOperandNode));
+                        code3->u.two.op2->type = addr;
+                        code3->u.two.op2->offset = argoffset;
+                        argoffset += 4;
+                        code3->u.two.op2->address = malloc(sizeof(asmOperandNode));
+                        code3->u.two.op2->address->type = reg;
+                        code3->u.two.op2->address->no = 29;
+                        VarList[temp->data->u.arg.x->kind*TempNo+temp->data->u.arg.x->u.var_no-1].instack = 1;
+                        VarList[temp->data->u.arg.x->kind*TempNo+temp->data->u.arg.x->u.var_no-1].offset = argoffset;
+                        addAsmCode(code3);
+                        temp = temp->next;
+                    }
+                }
+                
+                subsp4();
+                swra();
+
+                asmCode code4 = malloc(sizeof(asmCodeNode));
+                code4->type = asmJal;
+                code4->u.one.op1 = malloc(sizeof(asmOperandNode));
+                code4->u.one.op1->type = str;
+                code4->u.one.op1->name = root->data->u.call.f->u.id;
+                code4->next = code4->prev = NULL;
+                addAsmCode(code4);
+
+                lwra();
+                addsp4();
+                
+                for (int i = 0; i < TempNo+VariaNo; i++)
+                    {
+                        if (VarList[i].isa != 0){
+                            asmCode code7 = malloc(sizeof(asmCodeNode));
+                            code7->prev = code7->next = NULL;
+                            code7->type = asmLw;
+                            code7->u.two.op1 = malloc(sizeof(asmOperandNode));
+                            code7->u.two.op1->type = reg;
+                            code7->u.two.op1->no = VarList[i].isa;
+                            code7->u.two.op2 = malloc(sizeof(asmOperandNode));
+                            code7->u.two.op2->type = addr;
+                            code7->u.two.op2->offset = VarList[i].offset;
+                            code7->u.two.op2->address = malloc(sizeof(asmOperandNode));
+                            code7->u.two.op2->address->type = reg;
+                            code7->u.two.op2->address->no = 30;
+                            addAsmCode(code7);
+                            VarList[i].inreg = 1;
+                            VarList[i].regNo = VarList[i].isa;
+                            VarList[i].isa = 0;
+                        }
+                    }
+
+                if (argspace != 0)
+                {asmCode code5 = malloc(sizeof(asmCodeNode));
+                code5->next = code5->prev = NULL;
+                code5->type = asmAddi;
+                code5->u.three.op1 = malloc(sizeof(asmOperandNode));
+                code5->u.three.op1->type = reg;
+                code5->u.three.op1->no = 29;
+                code5->u.three.op2 = malloc(sizeof(asmOperandNode));
+                code5->u.three.op2->type = reg;
+                code5->u.three.op2->no = 29;
+                code5->u.three.op3 = malloc(sizeof(asmOperandNode));
+                code5->u.three.op3->type = immediate;
+                code5->u.three.op3->value = argspace;
+                addAsmCode(code5);}
+
+                // didnt load back, dunno what will happen
+
                 asmCode code2 = malloc(sizeof(asmCodeNode));
-                code2->type = asmJal;
-                code2->u.one.op1 = malloc(sizeof(asmOperandNode));
-                code2->u.one.op1->type = str;
-                code2->u.one.op1->name = root->data->u.call.f->u.id;
+                code2->type = asmMove;
+                code2->u.two.op1 = malloc(sizeof(asmOperandNode));
+                code2->u.two.op1->type = reg; 
+                code2->u.two.op1->no = getReg(root->data->u.call.x,1,root);
+                code2->u.two.op2 = malloc(sizeof(asmOperandNode));
+                code2->u.two.op2->type = reg;
+                code2->u.two.op2->no = 2;
                 code2->next = code2->prev = NULL;
                 addAsmCode(code2);
-                asmCode code1 = malloc(sizeof(asmCodeNode));
-                code1->type = asmMove;
-                code1->u.two.op1 = malloc(sizeof(asmOperandNode));
-                code1->u.two.op1->type = reg; 
-                code1->u.two.op1->no = getReg(root->data->u.call.x,1,root);
-                code1->u.two.op2 = malloc(sizeof(asmOperandNode));
-                code1->u.two.op2->type = reg;
-                code1->u.two.op2->no = 2;
-                code1->next = code1->prev = NULL;
-                addAsmCode(code1);
             }
                 break;
-            case PARAM:
+            
             case READ:
             {
                 subsp4();
