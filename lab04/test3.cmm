@@ -1,0 +1,12 @@
+int a() { return 1; }
+
+int func() { 
+    if (a()) return 2;
+    return 3;
+}
+
+int main() {
+    int b = func();
+    write(b);
+    return 0;
+}

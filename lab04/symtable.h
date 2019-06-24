@@ -166,7 +166,7 @@ struct asmOperand_ {
  
 
 struct asmCode_ {
-    enum{ asmLabel, asmLi, asmMove, asmAddi, asmAdd, asmSub, asmMul, asmDiv, asmLw, asmSw, asmJ, asmJal, asmJr, asmBeq, asmBne, asmBgt, asmBlt, asmBge, asmBle, asmLa } type;
+    enum{ asmLabel, asmLi, asmMove, asmAddi, asmAdd, asmSub, asmMul, asmDiv, asmLw, asmSw, asmJ, asmJal, asmJr, asmBeq, asmBne, asmBgt, asmBlt, asmBge, asmBle, asmLa, asmMflo } type;
     union{
         struct {asmOperand op1;} one;
         struct {asmOperand op1, op2;} two;
@@ -179,6 +179,8 @@ struct asmCode_ {
 struct reg {
     Operand var;
     int next;
+    int out;
+    Operand oldout;
 }regsNode;
 
 struct var_descriptor_ {

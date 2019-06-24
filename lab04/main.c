@@ -75,11 +75,10 @@ void OutputasmCode(FILE * out){
                 break;
             }
             case asmDiv: {
-                char opstr1[64], opstr2[64], opstr3[64];
-                HelperAsm(root->u.three.op1, opstr1);
-                HelperAsm(root->u.three.op2, opstr2);
-                HelperAsm(root->u.three.op3, opstr3);
-                fprintf(out, "div %s, %s, %s\n", opstr1, opstr2, opstr3);
+                char opstr2[64], opstr3[64];
+                HelperAsm(root->u.two.op1, opstr2);
+                HelperAsm(root->u.two.op2, opstr3);
+                fprintf(out,"div %s, %s\n", opstr2, opstr3);
                 break;
             }
             case asmLw: {
@@ -167,6 +166,12 @@ void OutputasmCode(FILE * out){
                 HelperAsm(root->u.two.op1, opstr1);
                 HelperAsm(root->u.two.op2, opstr2);
                 fprintf(out, "la %s, %s\n", opstr1, opstr2);
+                break;
+            }
+            case asmMflo: {
+                char opstr1[64];
+                HelperAsm(root->u.one.op1, opstr1);
+                fprintf(out, "mflo %s\n", opstr1);
                 break;
             }
         }
