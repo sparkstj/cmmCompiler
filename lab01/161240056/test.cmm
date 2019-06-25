@@ -1,7 +1,0 @@
-struct a{
- int i;
-};
-int main() {
- struct a b;
- return 0;
-}

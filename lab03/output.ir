@@ -1,7 +1,0 @@
-FUNCTION main :
-t1 := #0
-LABEL label3 :
-LABEL label1 :
-t1 := #1
-LABEL label2 :
-WRITE t1
